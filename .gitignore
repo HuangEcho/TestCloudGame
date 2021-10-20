@@ -1,7 +1,8 @@
 venv/
 .idea
-__pycache__
+__pycache__/
 venv
+*/.pytest_cache/
 
 *.log
 *.pyc
