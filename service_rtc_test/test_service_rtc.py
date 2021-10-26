@@ -11,9 +11,10 @@ from dependent.env_self import Env
 
 log = logging.getLogger("test_service_rtc")
 yaml_file = "../dependent/env/env.yaml"
-# ip_num不能超过255，这里要考虑如何完善一下，要避免同一个ip频繁请求
-ip_num = random.randint(0, 50)
-for_ip = "192.168.65.{0}"
+# 增加一些ip地址
+ip_path_one = random.randint(2, 10)
+ip_path_two = random.randint(0, 50)
+for_ip = "192.168.{0}.{1}"
 
 
 class TestServiceRTC(object):
@@ -24,11 +25,15 @@ class TestServiceRTC(object):
         env = Env()
         env.get_env_info(yaml_file)
         driver = env.service_rtc
-        global ip_num
-        ip_num += 1
+        global ip_path_one, ip_path_two
+        if ip_path_two >= 255:
+            ip_path_one += 1
+            ip_path_two = random.randint(0, 50)
+        else:
+            ip_path_two += 1
         try:
             if isinstance(driver, dict):
-                driver["x-forwarded-for"] = for_ip.format(ip_num)
+                driver["x-forwarded-for"] = for_ip.format(ip_path_one, ip_path_two)
                 url = "http://{0}:{1}/peer/init".format(driver["remote_ip"], driver["port"])
                 header = {"x-forwarded-for":driver["x-forwarded-for"]}
                 driver["peer_id"] = json.loads(requests.get(url, headers=header).text)["data"]["peerId"]
