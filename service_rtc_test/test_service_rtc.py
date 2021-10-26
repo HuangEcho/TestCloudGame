@@ -83,11 +83,6 @@ class TestServiceRTC(object):
         assert check_response["code"] == 0
         assert check_response["message"] == "ok"
         assert "token" in check_response["data"]
-        # # 销毁session
-        # url = "http://{0}:{1}/session/close".format(driver["remote_ip"], driver["port"])
-        # header = {"Session-Token": check_response["data"]["token"]}
-        # response = requests.get(url, headers=header)
-        # print(response)
 
     def test_session_create_no_userid(self, driver):
         url = "http://{0}:{1}/session/create".format(driver["remote_ip"], driver["port"])
