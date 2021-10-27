@@ -320,7 +320,17 @@ class TestServiceRTC(object):
         assert response.status_code == 200
         check_response = json.loads(response.text)
         assert check_response["code"] == 700
-        # 报错 "invalid session token"
+        # 会报错 "invalid session token"
+        assert "invalid session token" in check_response["message"]
+
+    def test_session_close_without_connection(self, driver):
+        url = "http://{0}:{1}/session/close".format(driver["remote_ip"], driver["port"])
+        header = {"Session-Token": driver["token"], "x-forwarded-for": driver["x-forwarded-for"]}
+        response = self.request_response(url=url, method="get", headers=header)
+        assert response.status_code == 200
+        check_response = json.loads(response.text)
+        assert check_response["code"] == 700
+        # 会报错 "invalid session token"
         assert "invalid session token" in check_response["message"]
 
     # method GET
@@ -336,15 +346,62 @@ class TestServiceRTC(object):
         check_response = json.loads(response.text)
         assert check_response["code"] == 0
 
+    def test_admin_connection_get_without_connection(self, driver):
+        url = "http://{0}:{1}/admin/connection/get?sessionToken={2}".format(driver["remote_ip"], driver["port"],
+                                                                            driver["token"])
+        header = {"x-forwarded-for": driver["x-forwarded-for"]}
+        response = self.request_response(url=url, method="get", headers=header)
+        assert response.status_code == 200
+        check_response = json.loads(response.text)
+        assert check_response["code"] == 1
+        # 会报错 "invalid session"
+        assert "invalid session" in check_response["message"]
+
+    def test_admin_connection_get_param_without_token(self, driver):
+        # 绑定实例
+        self.connection_allocate_v2(driver)
+
+        url = "http://{0}:{1}/admin/connection/get".format(driver["remote_ip"], driver["port"])
+        header = {"x-forwarded-for": driver["x-forwarded-for"]}
+        response = self.request_response(url=url, method="get", headers=header)
+        assert response.status_code == 200
+        check_response = json.loads(response.text)
+        assert check_response["code"] == 1
+        # 报错 "invalid params [sessionToken]"
+        assert "invalid param" in check_response["message"]
+
+    def test_admin_connection_get_token_wrong(self, driver):
+        disposable_token = "ad31c761727fbcd2643c73fd32235a6a60a780d43a94dd2e02998ab3a9bea41b"
+        url = "http://{0}:{1}/admin/connection/get?sessionToken={2}".format(driver["remote_ip"], driver["port"],
+                                                                            disposable_token)
+        header = {"x-forwarded-for": driver["x-forwarded-for"]}
+        response = self.request_response(url=url, method="get", headers=header)
+        assert response.status_code == 200
+        check_response = json.loads(response.text)
+        assert check_response["code"] == 1
+        # 会报错 "invalid session"
+        assert "invalid session" in check_response["message"]
+
     # method POST
     def test_admin_agent_msg_closed(self, driver):
         # 绑定实例
         self.connection_allocate_v2(driver)
         node_id = json.loads(self.connection_get(driver).text)["data"]["connection"]["nodeId"]
         url = "http://{0}:{1}/admin/agent/msg".format(driver["remote_ip"], driver["port"])
-        header = {"sessionToken": driver["token"], "x-forwarded-for": driver["x-forwarded-for"]}
+        header = {"x-forwarded-for": driver["x-forwarded-for"]}
         data = {"node_id": node_id,
                 "data": {"type": "closed", "session_id": driver["token"], "reason": "test", "code": 1}}
+        response = self.request_response(url=url, method="post", headers=header, data=data)
+        assert response.status_code == 200
+        check_response = json.loads(response.text)
+        assert check_response["code"] == 0
+
+    @pytest.mark.skip(reason="no effect")
+    def test_admin_agent_msg_closed_without_node_id(self, driver):
+        # 绑定实例
+        url = "http://{0}:{1}/admin/agent/msg".format(driver["remote_ip"], driver["port"])
+        header = {"x-forwarded-for": driver["x-forwarded-for"]}
+        data = {"data": {"type": "closed", "session_id": driver["token"], "reason": "test", "code": 1}}
         response = self.request_response(url=url, method="post", headers=header, data=data)
         assert response.status_code == 200
         check_response = json.loads(response.text)
