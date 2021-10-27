@@ -13,7 +13,7 @@ log = logging.getLogger("test_service_rtc")
 yaml_file = "../dependent/env/env.yaml"
 # 增加一些ip地址
 ip_path_one = random.randint(2, 10)
-ip_path_two = random.randint(0, 50)
+ip_path_two = random.randint(2, 10)
 for_ip = "192.168.{0}.{1}"
 
 

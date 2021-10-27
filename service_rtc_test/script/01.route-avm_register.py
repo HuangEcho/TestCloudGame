@@ -9,14 +9,14 @@ yaml_file = "../../dependent/env/env.yaml"
 
 class RouteAvmRegister(object):
     def __init__(self):
-        self.avm_env = dict
+        self.tunnel_agent_env = dict
 
     def get_avm_env(self):
         env = Env().get_env_info(yaml_file)
         if "tunnel_agent" in env:
-            self.avm_env = env["tunnel_agent"]
+            self.tunnel_agent_env = env["tunnel_agent"]
         else:
-            print("avm_manager environment get error")
+            print("tunnel_agent environment get error")
 
     def tunnel_route_request(self, avm_id):
         timestamp = int(time.time())
@@ -56,16 +56,19 @@ class RouteAvmRegister(object):
         return data
 
     def main(self):
-        if isinstance(self.avm_env, dict):
+        self.get_avm_env()
+        if isinstance(self.tunnel_agent_env, dict):
             try:
-                url = "http://{0}:{1}/tunnel/route".format(self.avm_env["remote_ip"], self.avm_env["ip"])
-                for num in range(self.avm_env["num_start"], self.avm_env["num_end"]):
+                url = "http://{0}:{1}/tunnel/route".format(self.tunnel_agent_env["remote_ip"], self.tunnel_agent_env["ip"])
+                for num in range(self.tunnel_agent_env["num_start"], self.tunnel_agent_env["num_end"]):
                     data = self.tunnel_route_request(num)
                     c = config_HTTP.HTTPRequest(url=url, method='POST', data=data)
                     c.send_request()
                     time.sleep(1)
             except Exception as E:
                 print("error is {0}".format(E))
+        else:
+            print("check tunnel_agent_env")
 
 
 if __name__ == '__main__':
