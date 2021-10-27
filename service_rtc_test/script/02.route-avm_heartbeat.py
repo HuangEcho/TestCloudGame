@@ -17,11 +17,9 @@ class RouteAvmHeartBeat(object):
         self.tunnel_agent_env = dict
 
     def get_avm_env(self):
-        env = Env().get_env_info(yaml_file)
-        if "tunnel_agent" in env:
-            self.tunnel_agent_env = env["tunnel_agent"]
-        else:
-            print("tunnel_agent environment get error")
+        env = Env()
+        env.get_env_info(yaml_file)
+        self.tunnel_agent_env = env.get_special_env("tunnel_agent")
 
     def heart_beat(self, avm_id):
         try:

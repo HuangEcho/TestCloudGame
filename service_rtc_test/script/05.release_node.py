@@ -16,11 +16,9 @@ class ReleaseNode(object):
         self.rtc_env = dict
 
     def get_rtc_env(self):
-        env = Env().get_env_info(yaml_file)
-        if "scheduler" in env:
-            self.rtc_env = env["scheduler"]
-        else:
-            print("scheduler environment get error")
+        env = Env()
+        env.get_env_info(yaml_file)
+        self.rtc_env = env.get_special_env("scheduler")
 
     def main(self):
         self.get_rtc_env()
@@ -33,7 +31,7 @@ class ReleaseNode(object):
                         ip_path_two = random.randint(2, 10)
                     else:
                         ip_path_two += 1
-                        
+
                     headers = {
                         "Content-Type": "application/json",
                         "x-forwarded-for": ip.format(ip_path_one, ip_path_two)

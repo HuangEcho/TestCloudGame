@@ -12,11 +12,9 @@ class PutOnAvm(object):
         self.avm_env = dict
 
     def get_avm_env(self):
-        env = Env().get_env_info(yaml_file)
-        if "avm_manager" in env:
-            self.avm_env = env["avm_manager"]
-        else:
-            print("avm_manager environment get error")
+        env = Env()
+        env.get_env_info(yaml_file)
+        self.avm_env = env.get_special_env("avm_manager")
 
     def set_status(self, avm_id):
         data = {
