@@ -299,63 +299,6 @@ class TestServiceRTC(object):
         # assert len(check_response["message"]) > 1
         assert "invalid session token" in check_response["message"]
 
-    # method POST
-    def test_sdk_info(self, driver):
-        # 绑定实例
-        self.connection_allocate_v2(driver)
-
-        url = "http://{0}:{1}/sdk/info".format(driver["remote_ip"], driver["port"])
-        header = {"Session-Token": driver["token"], "x-forwarded-for": driver["x-forwarded-for"]}
-        data = {"sdk_version": "test_1.0.1", "sdk_type": "android", "os": "android 11"}
-        response = self.request_response(url=url, method="post", headers=header, data=data)
-        assert response.status_code == 200
-        check_response = json.loads(response.text)
-        assert check_response["code"] == 0
-
-    @pytest.mark.skip(reason="temporarily not running")
-    # 这个不管怎样都会上报成功，不懂
-    def test_sdk_info_without_token(self, driver):
-        url = "http://{0}:{1}/sdk/info".format(driver["remote_ip"], driver["port"])
-        header = {"x-forwarded-for": driver["x-forwarded-for"]}
-        data = {"sdk_version": "test_1.0.1", "sdk_type": "android", "os": "android 11"}
-        response = self.request_response(url=url, method="post", headers=header, data=data)
-        assert response.status_code == 200
-        check_response = json.loads(response.text)
-        assert check_response["code"] == 1
-
-    @pytest.mark.skip(reason="temporarily not running")
-    # 这个不管怎样都会上报成功，先跳过
-    def test_sdk_info_without_sdk_version(self, driver):
-        url = "http://{0}:{1}/sdk/info".format(driver["remote_ip"], driver["port"])
-        header = {"x-forwarded-for": driver["x-forwarded-for"]}
-        data = {"sdk_type": "android", "os": "android 11"}
-        response = self.request_response(url=url, method="post", headers=header, data=data)
-        assert response.status_code == 200
-        check_response = json.loads(response.text)
-        assert check_response["code"] == 1
-
-    @pytest.mark.skip(reason="temporarily not running")
-    # 这个不管怎样都会上报成功，先跳过
-    def test_sdk_info_without_sdk_type(self, driver):
-        url = "http://{0}:{1}/sdk/info".format(driver["remote_ip"], driver["port"])
-        header = {"x-forwarded-for": driver["x-forwarded-for"]}
-        data = {"sdk_version": "test_1.0.1", "os": "android 11"}
-        response = self.request_response(url=url, method="post", headers=header, data=data)
-        assert response.status_code == 200
-        check_response = json.loads(response.text)
-        assert check_response["code"] == 1
-
-    @pytest.mark.skip(reason="temporarily not running")
-    # 这个不管怎样都会上报成功，先跳过
-    def test_sdk_info_without_os(self, driver):
-        url = "http://{0}:{1}/sdk/info".format(driver["remote_ip"], driver["port"])
-        header = {"x-forwarded-for": driver["x-forwarded-for"]}
-        data = {"sdk_version": "test_1.0.1", "sdk_type": "android"}
-        response = self.request_response(url=url, method="post", headers=header, data=data)
-        assert response.status_code == 200
-        check_response = json.loads(response.text)
-        assert check_response["code"] == 1
-
     # method GET
     def test_admin_connection_get(self, driver):
         # 绑定实例
