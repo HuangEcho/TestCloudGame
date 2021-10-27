@@ -76,7 +76,7 @@ class TestServiceRTC(object):
         assert check_response["message"] == "ok"
         assert "token" in check_response["data"]
 
-    def test_session_create_no_userid(self, driver):
+    def test_session_create_without_userid(self, driver):
         url = "http://{0}:{1}/session/create".format(driver["remote_ip"], driver["port"])
         header = {"appid": "test", "x-forwarded-for": driver["x-forwarded-for"]}
         response = self.request_response(url=url, method="get", headers=header)
@@ -85,7 +85,7 @@ class TestServiceRTC(object):
         assert check_response["code"] == 1
         assert "invalid params" in check_response["message"]
 
-    def test_session_create_no_appid(self, driver):
+    def test_session_create_without_appid(self, driver):
         url = "http://{0}:{1}/session/create".format(driver["remote_ip"], driver["port"])
         header = {"userid": "123", "x-forwarded-for": driver["x-forwarded-for"]}
         response = self.request_response(url=url, method="get", headers=header)
@@ -94,7 +94,7 @@ class TestServiceRTC(object):
         assert check_response["code"] == 1
         assert "invalid params" in check_response["message"]
 
-    def test_session_create_no_userid_and_appid(self, driver):
+    def test_session_create_without_userid_or_appid(self, driver):
         url = "http://{0}:{1}/session/create".format(driver["remote_ip"], driver["port"])
         header = {"x-forwarded-for": driver["x-forwarded-for"]}
         response = self.request_response(url=url, method="get", headers=header)
@@ -143,7 +143,7 @@ class TestServiceRTC(object):
         # assert "invalid session" in check_response["message"]
 
     # method GET
-    def test_connection_allocate_v2_no_channel(self, driver):
+    def test_connection_allocate_v2_without_channel(self, driver):
         url = "http://{0}:{1}/connection/allocate/v2?package_name=jp.ogapee.onscripter.release&version_code=20210831".format(
             driver["remote_ip"], driver["port"])
         header = {"Session-Token": driver["token"], "Peer-Id": driver["peer_id"],
@@ -171,7 +171,7 @@ class TestServiceRTC(object):
         assert len(find_result) > 0
 
     # method GET
-    def test_connection_allocate_v2_no_pacakage_name(self, driver):
+    def test_connection_allocate_v2_without_pacakage_name(self, driver):
         url = "http://{0}:{1}/connection/allocate/v2?channel_id=5&package_name=&version_code=20210831".format(
             driver["remote_ip"], driver["port"])
         header = {"Session-Token": driver["token"], "Peer-Id": driver["peer_id"],
@@ -201,7 +201,7 @@ class TestServiceRTC(object):
     # method GET
     # 已经上线的游戏，允许没有version_code;没有上线的游戏，要求必须有version_code
     # 目前模拟的游戏没有上线，报错会有"get gameData error"
-    def test_connection_allocate_v2_no_version_code(self, driver):
+    def test_connection_allocate_v2_without_version_code(self, driver):
         url = "http://{0}:{1}/connection/allocate/v2?channel_id=5&package_name=jp.ogapee.onscripter.release".format(
             driver["remote_ip"], driver["port"])
         header = {"Session-Token": driver["token"], "Peer-Id": driver["peer_id"],
@@ -264,7 +264,7 @@ class TestServiceRTC(object):
         assert check_response["code"] == 0
 
     # 没有绑定实例化，直接请求keep_alive
-    def test_keep_alive_no_connection(self, driver):
+    def test_keep_alive_without_connection(self, driver):
         url = "http://{0}:{1}/session/keepalive".format(driver["remote_ip"], driver["port"])
         header = {"Session-Token": driver["token"], "x-forwarded-for": driver["x-forwarded-for"]}
         response = self.request_response(url=url, method="get", headers=header)
@@ -276,7 +276,7 @@ class TestServiceRTC(object):
         assert "get session token error" in check_response["message"]
 
     # headers中没有传入token
-    def test_keep_alive_no_token(self, driver):
+    def test_keep_alive_without_token(self, driver):
         url = "http://{0}:{1}/session/keepalive".format(driver["remote_ip"], driver["port"])
         header = {"x-forwarded-for": driver["x-forwarded-for"]}
         response = self.request_response(url=url, method="get", headers=header)
@@ -299,6 +299,30 @@ class TestServiceRTC(object):
         # assert len(check_response["message"]) > 1
         assert "invalid session token" in check_response["message"]
 
+    def test_session_close(self, driver):
+        # 绑定实例
+        self.connection_allocate_v2(driver)
+
+        url = "http://{0}:{1}/session/close".format(driver["remote_ip"], driver["port"])
+        header = {"Session-Token": driver["token"], "x-forwarded-for": driver["x-forwarded-for"]}
+        response = self.request_response(url=url, method="get", headers=header)
+        assert response.status_code == 200
+        check_response = json.loads(response.text)
+        assert check_response["code"] == 0
+
+    def test_session_close_without_token(self, driver):
+        # 绑定实例
+        self.connection_allocate_v2(driver)
+
+        url = "http://{0}:{1}/session/close".format(driver["remote_ip"], driver["port"])
+        header = {"x-forwarded-for": driver["x-forwarded-for"]}
+        response = self.request_response(url=url, method="get", headers=header)
+        assert response.status_code == 200
+        check_response = json.loads(response.text)
+        assert check_response["code"] == 700
+        # 报错 "invalid session token"
+        assert "invalid session token" in check_response["message"]
+
     # method GET
     def test_admin_connection_get(self, driver):
         # 绑定实例
@@ -307,18 +331,6 @@ class TestServiceRTC(object):
         url = "http://{0}:{1}/admin/connection/get?sessionToken={2}".format(driver["remote_ip"], driver["port"],
                                                                             driver["token"])
         header = {"x-forwarded-for": driver["x-forwarded-for"]}
-        response = self.request_response(url=url, method="get", headers=header)
-        assert response.status_code == 200
-        check_response = json.loads(response.text)
-        assert check_response["code"] == 0
-
-    # 自己生成一个sessionid，再去close
-    def test_session_close(self, driver):
-        # 绑定实例
-        self.connection_allocate_v2(driver)
-
-        url = "http://{0}:{1}/session/close".format(driver["remote_ip"], driver["port"])
-        header = {"Session-Token": driver["token"], "x-forwarded-for": driver["x-forwarded-for"]}
         response = self.request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
         check_response = json.loads(response.text)
