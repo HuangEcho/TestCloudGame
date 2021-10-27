@@ -3,9 +3,9 @@
 import time
 import json
 import base64
-from service_rtc_test.script.utils import configHTTP
+from dependent import config_HTTP
 
-url = configHTTP.url_prefix_tunnel_agent + '/tunnel/route'
+url = config_HTTP.url_prefix_tunnel_agent + '/tunnel/route'
 
 ts = int(time.time())
 

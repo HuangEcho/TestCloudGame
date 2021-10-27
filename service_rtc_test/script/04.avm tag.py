@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 
-from service_rtc_test.script.utils import configHTTP
+from dependent import configHTTP
 
 url = configHTTP.url_prefix_avm_manager + '/v1/avm/tag/add'
 

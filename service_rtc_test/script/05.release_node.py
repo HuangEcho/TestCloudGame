@@ -1,5 +1,4 @@
-
-from service_rtc_test.script.utils import configHTTP
+from dependent import configHTTP
 import requests
 
 pre_url = configHTTP.url_prefix_service_rtc + '/admin/node/release?node_id={0}'

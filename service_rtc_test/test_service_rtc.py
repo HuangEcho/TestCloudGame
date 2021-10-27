@@ -24,7 +24,7 @@ class TestServiceRTC(object):
     def driver(self):
         env = Env()
         env.get_env_info(yaml_file)
-        driver = env.service_rtc
+        driver = env.env["service_rtc"]
         global ip_path_one, ip_path_two
         if ip_path_two >= 255:
             ip_path_one += 1
@@ -43,7 +43,7 @@ class TestServiceRTC(object):
 
         except Exception as E:
             log.debug("error is {0}".format(E))
-        print(driver)
+        print("driver info is: {0}".format(driver))
         yield driver
         # close session, 以防万一，就算失败也有一个保底的close
         if "token" in driver:
@@ -396,16 +396,16 @@ class TestServiceRTC(object):
         check_response = json.loads(response.text)
         assert check_response["code"] == 0
 
-    @pytest.mark.skip(reason="no effect")
-    def test_admin_agent_msg_closed_without_node_id(self, driver):
-        # 绑定实例
-        url = "http://{0}:{1}/admin/agent/msg".format(driver["remote_ip"], driver["port"])
-        header = {"x-forwarded-for": driver["x-forwarded-for"]}
-        data = {"data": {"type": "closed", "session_id": driver["token"], "reason": "test", "code": 1}}
-        response = self.request_response(url=url, method="post", headers=header, data=data)
-        assert response.status_code == 200
-        check_response = json.loads(response.text)
-        assert check_response["code"] == 0
+    # @pytest.mark.skip
+    # def test_admin_agent_msg_closed_without_node_id(self, driver):
+    #     # 绑定实例
+    #     url = "http://{0}:{1}/admin/agent/msg".format(driver["remote_ip"], driver["port"])
+    #     header = {"x-forwarded-for": driver["x-forwarded-for"]}
+    #     data = {"data": {"type": "closed", "session_id": driver["token"], "reason": "test", "code": 1}}
+    #     response = self.request_response(url=url, method="post", headers=header, data=data)
+    #     assert response.status_code == 200
+    #     check_response = json.loads(response.text)
+    #     assert check_response["code"] == 0
 
     def request_response(self, **kwargs):
         # 暂时只写两种方法，如果有新增的，再增加，都保证至少有url和headers
