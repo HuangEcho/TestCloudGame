@@ -2,11 +2,10 @@
 
 import time
 import json
+import requests
 import base64
-from dependent import config_HTTP
 from dependent.env_self import Env
 
-url = config_HTTP.url_prefix_tunnel_agent + '/tunnel/route'
 yaml_file = "../../dependent/env/env.yaml"
 
 
@@ -87,8 +86,9 @@ class RouteAvmHeartBeat(object):
                 url = "http://{0}:{1}/tunnel/route".format(self.tunnel_agent_env["remote_ip"], self.tunnel_agent_env["port"])
                 for num in range(self.tunnel_agent_env["num_start"], self.tunnel_agent_env["num_end"]):
                     data = self.heart_beat(num)
-                    c = config_HTTP.HTTPRequest(url=url, method='POST', data=data)
-                    c.send_request()
+                    response = requests.post(url, data=json.dumps(data))
+                    # print(json.dumps(json.loads(response.text), indent=4))
+                    print(json.dumps(json.loads(base64.b64decode(json.loads(response.text)["route"]["body"]).decode()), indent=4))
                     time.sleep(1)
             except Exception as E:
                 print("error is {0}".format(E))

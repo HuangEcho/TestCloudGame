@@ -1,6 +1,5 @@
-# -*- coding:utf-8 -*-
-
-from dependent import config_HTTP
+import requests
+import json
 from dependent.env_self import Env
 
 yaml_file = "../../dependent/env/env.yaml"
@@ -37,8 +36,8 @@ class AvmTag(object):
                     amv = "shenzhen_mobile_test_" + str(num)
                     avm_ids.append(amv)
                 data = self.tag_data(avm_ids)
-                c = config_HTTP.HTTPRequest(url=url, method='POST', headers=headers, data=data)
-                c.send_request()
+                response = requests.post(url, data=json.dumps(data), headers=headers)
+                print(json.dumps(json.loads(response.text), indent=4))
 
             except Exception as E:
                 print("error is {0}".format(E))

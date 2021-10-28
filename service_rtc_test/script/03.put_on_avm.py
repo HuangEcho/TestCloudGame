@@ -1,8 +1,6 @@
-# -*- coding:utf-8 -*-
-
-from dependent import config_HTTP
+import json
+import requests
 from dependent.env_self import Env
-import time
 
 yaml_file = "../../dependent/env/env.yaml"
 
@@ -29,13 +27,13 @@ class PutOnAvm(object):
         self.get_avm_env()
         if isinstance(self.avm_env, dict):
             headers = {"Content-Type": "application/json"}
+            # 这个接口似乎允许高并发，不会因为频繁请求而拒绝
             url = "http://{0}:{1}/v1/avm/service_status/set".format(self.avm_env["remote_ip"], self.avm_env["port"])
             try:
                 for num in range(self.avm_env["num_start"], self.avm_env["num_end"]):
                     data = self.set_status(num)
-                    c = config_HTTP.HTTPRequest(url=url, method='POST', headers=headers, data=data)
-                    c.send_request()
-                    time.sleep(1)
+                    response = requests.post(url, data=json.dumps(data), headers=headers)
+                    print(json.dumps(json.loads(response.text), indent=4))
             except Exception as E:
                 print("error is {0}".format(E))
 
