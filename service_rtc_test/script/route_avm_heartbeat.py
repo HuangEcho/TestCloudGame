@@ -6,8 +6,6 @@ import base64
 from dependent.env_self import Env
 from dependent.requests_http import RequestHttp
 
-yaml_file = "../../dependent/env/env.yaml"
-
 
 # 当有心跳时，会自动更新节点的 running_status（程序运行状态） 为 1（在线）(离线（0: S_OFFLINE）/在线（1: S_ONLINE）)
 # 当 AVM_TIMEOUT_INTERVAL 对应的时间内未上报心跳时，更新 running_status 为 0（离线）
@@ -15,9 +13,9 @@ class RouteAvmHeartBeat(object):
     def __init__(self):
         self.tunnel_agent_env = dict
 
-    def get_avm_env(self, file_name=yaml_file):
+    def get_avm_env(self):
         env = Env()
-        env.get_env_info(file_name)
+        env.get_env_info()
         self.tunnel_agent_env = env.get_special_env("tunnel_agent")
 
     def heart_beat(self, avm_id):
@@ -79,8 +77,8 @@ class RouteAvmHeartBeat(object):
         except Exception as E:
             print("error is {0}".format(E))
 
-    def main(self, file_name=yaml_file):
-        self.get_avm_env(file_name)
+    def main(self):
+        self.get_avm_env()
         if isinstance(self.tunnel_agent_env, dict):
             try:
                 url = "http://{0}:{1}/tunnel/route".format(self.tunnel_agent_env["remote_ip"], self.tunnel_agent_env["port"])

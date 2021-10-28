@@ -1,8 +1,11 @@
 venv/
 .idea
 __pycache__/
-venv
 */.pytest_cache/
+/temp
+*/temp
+/report
+*/report
 
 *.log
 *.pyc

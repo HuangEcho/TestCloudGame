@@ -2,7 +2,6 @@ import random
 from dependent.env_self import Env
 from dependent.requests_http import RequestHttp
 
-yaml_file = "../../dependent/env/env.yaml"
 pre_url = "http://{0}:{1}/admin/node/release?node_id={2}"
 node_id = "shenzhen_mobile_test_{0}"
 # 增加一些ip地址
@@ -15,13 +14,13 @@ class ReleaseNode(object):
     def __init__(self):
         self.rtc_env = dict
 
-    def get_rtc_env(self, file_name=yaml_file):
+    def get_rtc_env(self):
         env = Env()
-        env.get_env_info(file_name)
+        env.get_env_info()
         self.rtc_env = env.get_special_env("service_rtc")
 
-    def main(self, file_name=yaml_file):
-        self.get_rtc_env(file_name)
+    def main(self):
+        self.get_rtc_env()
         global ip_path_one, ip_path_two
         if isinstance(self.rtc_env, dict):
             try:

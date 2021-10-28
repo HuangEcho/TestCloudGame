@@ -17,7 +17,6 @@ from service_rtc_test.script.avm_tag import AvmTag
 from service_rtc_test.script.release_node import ReleaseNode
 
 log = logging.getLogger("test_service_rtc")
-yaml_file = "../dependent/env/env.yaml"
 # 增加一些ip地址
 ip_path_one = random.randint(2, 10)
 ip_path_two = random.randint(2, 10)
@@ -28,24 +27,27 @@ class TestServiceRTC(object):
 
     @pytest.fixture(scope="class")
     def workspace(self):
-        print("workspace ready")
+        log.info("workspace ready")
         # 注册avm
-        RouteAvmRegister().main(yaml_file)
+        RouteAvmRegister().main()
         # avm上报心跳
-        RouteAvmHeartBeat().main(yaml_file)
+        RouteAvmHeartBeat().main()
         # 上架avm
-        PutOnAvm().main(yaml_file)
+        PutOnAvm().main()
         # 给avm打tag
-        AvmTag().main(yaml_file)
+        AvmTag().main()
         yield
         # 释放节点
-        ReleaseNode().main(yaml_file)
-        print("workspace clean")
+        ReleaseNode().main()
+        log.info("workspace clean")
 
+    # 如果不想跑workspace，可注释掉
     @pytest.fixture(scope="function")
-    def driver(self, workspace):
+    # def driver(self, workspace):
+    def driver(self):
+        log.info("test case setup")
         env = Env()
-        env.get_env_info(yaml_file)
+        env.get_env_info()
         driver = env.env["service_rtc"]
         global ip_path_one, ip_path_two
         if ip_path_two >= 255:
@@ -65,16 +67,19 @@ class TestServiceRTC(object):
 
         except Exception as E:
             log.debug("error is {0}".format(E))
-        print("driver info is: {0}".format(driver))
+        log.debug("test case driver info is {0}".format(driver))
         yield driver
         # close session, 以防万一，就算失败也有一个保底的close
         if "token" in driver:
             url = "http://{0}:{1}/session/close".format(driver["remote_ip"], driver["port"])
             header = {"Session-Token": driver["token"], "x-forwarded-for": driver["x-forwarded-for"]}
             requests.get(url, headers=header)
+            log.debug("close session")
+        log.info("test case teardown")
 
     # method: GET
     def test_peer_init(self, driver):
+        self.start_case_log("test_peer_init")
         url = "http://{0}:{1}/peer/init".format(driver["remote_ip"], driver["port"])
         header = {"x-forwarded-for": driver["x-forwarded-for"]}
         response = RequestHttp().request_response(url=url, method="get", headers=header)
@@ -89,6 +94,7 @@ class TestServiceRTC(object):
 
     # method GET
     def test_session_create(self, driver):
+        self.start_case_log("test_session_create")
         url = "http://{0}:{1}/session/create".format(driver["remote_ip"], driver["port"])
         header = {"userid": "123", "appid": "test", "x-forwarded-for": driver["x-forwarded-for"]}
         response = RequestHttp().request_response(url=url, method="get", headers=header)
@@ -99,6 +105,7 @@ class TestServiceRTC(object):
         assert "token" in check_response["data"]
 
     def test_session_create_without_userid(self, driver):
+        self.start_case_log("test_session_create_without_userid")
         url = "http://{0}:{1}/session/create".format(driver["remote_ip"], driver["port"])
         header = {"appid": "test", "x-forwarded-for": driver["x-forwarded-for"]}
         response = RequestHttp().request_response(url=url, method="get", headers=header)
@@ -108,6 +115,7 @@ class TestServiceRTC(object):
         assert "invalid params" in check_response["message"]
 
     def test_session_create_without_appid(self, driver):
+        self.start_case_log("test_session_create_without_appid")
         url = "http://{0}:{1}/session/create".format(driver["remote_ip"], driver["port"])
         header = {"userid": "123", "x-forwarded-for": driver["x-forwarded-for"]}
         response = RequestHttp().request_response(url=url, method="get", headers=header)
@@ -117,6 +125,7 @@ class TestServiceRTC(object):
         assert "invalid params" in check_response["message"]
 
     def test_session_create_without_userid_or_appid(self, driver):
+        self.start_case_log("test_session_create_without_userid_or_appid")
         url = "http://{0}:{1}/session/create".format(driver["remote_ip"], driver["port"])
         header = {"x-forwarded-for": driver["x-forwarded-for"]}
         response = RequestHttp().request_response(url=url, method="get", headers=header)
@@ -126,6 +135,7 @@ class TestServiceRTC(object):
         assert "invalid params" in check_response["message"]
 
     def test_session_create_userid_not_int(self, driver):
+        self.start_case_log("test_session_create_userid_not_int")
         url = "http://{0}:{1}/session/create".format(driver["remote_ip"], driver["port"])
         header = {"userid": "test", "x-forwarded-for": driver["x-forwarded-for"]}
         response = RequestHttp().request_response(url=url, method="get", headers=header)
@@ -137,6 +147,7 @@ class TestServiceRTC(object):
     # method GET
     def test_connection_allocate_v2(self, driver):
         # 固定了一些信息，具体修改的地方，我还没有很了解，后续了解后再修改
+        self.start_case_log("test_connection_allocate_v2")
         url = "http://{0}:{1}/connection/allocate/v2?channel_id=5&package_name=jp.ogapee.onscripter.release&version_code=20210831".format(
             driver["remote_ip"], driver["port"])
         header = {"Session-Token": driver["token"], "Peer-Id": driver["peer_id"],
@@ -152,6 +163,7 @@ class TestServiceRTC(object):
 
     # method GET
     def test_connection_allocate_v2_token_invalid(self, driver):
+        self.start_case_log("test_connection_allocate_v2_token_invalid")
         disposable_token = "ad31c761727fbcd2643c73fd32235a6a60a780d43a94dd2e02998ab3a9bea41b"
         url = "http://{0}:{1}/connection/allocate/v2?channel_id=5&package_name=jp.ogapee.onscripter.release&version_code=20210831".format(
             driver["remote_ip"], driver["port"])
@@ -166,6 +178,7 @@ class TestServiceRTC(object):
 
     # method GET
     def test_connection_allocate_v2_without_channel(self, driver):
+        self.start_case_log("test_connection_allocate_v2_without_channel")
         url = "http://{0}:{1}/connection/allocate/v2?package_name=jp.ogapee.onscripter.release&version_code=20210831".format(
             driver["remote_ip"], driver["port"])
         header = {"Session-Token": driver["token"], "Peer-Id": driver["peer_id"],
@@ -180,6 +193,7 @@ class TestServiceRTC(object):
 
     # method GET
     def test_connection_allocate_v2_channel_is_null(self, driver):
+        self.start_case_log("test_connection_allocate_v2_channel_is_null")
         url = "http://{0}:{1}/connection/allocate/v2?channel_id=&package_name=jp.ogapee.onscripter.release&version_code=20210831".format(
             driver["remote_ip"], driver["port"])
         header = {"Session-Token": driver["token"], "Peer-Id": driver["peer_id"],
@@ -194,6 +208,7 @@ class TestServiceRTC(object):
 
     # method GET
     def test_connection_allocate_v2_without_pacakage_name(self, driver):
+        self.start_case_log("test_connection_allocate_v2_without_pacakage_name")
         url = "http://{0}:{1}/connection/allocate/v2?channel_id=5&package_name=&version_code=20210831".format(
             driver["remote_ip"], driver["port"])
         header = {"Session-Token": driver["token"], "Peer-Id": driver["peer_id"],
@@ -208,6 +223,7 @@ class TestServiceRTC(object):
 
     # method GET
     def test_connection_allocate_v2_pacakage_name_is_null(self, driver):
+        self.start_case_log("test_connection_allocate_v2_pacakage_name_is_null")
         url = "http://{0}:{1}/connection/allocate/v2?channel_id=5&version_code=20210831".format(
             driver["remote_ip"], driver["port"])
         header = {"Session-Token": driver["token"], "Peer-Id": driver["peer_id"],
@@ -224,6 +240,7 @@ class TestServiceRTC(object):
     # 已经上线的游戏，允许没有version_code;没有上线的游戏，要求必须有version_code
     # 目前模拟的游戏没有上线，报错会有"get gameData error"
     def test_connection_allocate_v2_without_version_code(self, driver):
+        self.start_case_log("test_connection_allocate_v2_without_version_code")
         url = "http://{0}:{1}/connection/allocate/v2?channel_id=5&package_name=jp.ogapee.onscripter.release".format(
             driver["remote_ip"], driver["port"])
         header = {"Session-Token": driver["token"], "Peer-Id": driver["peer_id"],
@@ -237,6 +254,7 @@ class TestServiceRTC(object):
     # 结果同test_connection_allocate_v2_no_version_code
     # 目前模拟的游戏没有上线，报错会有"get gameData error"
     def test_connection_allocate_v2_version_code_is_null(self, driver):
+        self.start_case_log("test_connection_allocate_v2_version_code_is_null")
         url = "http://{0}:{1}/connection/allocate/v2?channel_id=5&package_name=jp.ogapee.onscripter.release&version_code=".format(
             driver["remote_ip"], driver["port"])
         header = {"Session-Token": driver["token"], "Peer-Id": driver["peer_id"],
@@ -248,6 +266,7 @@ class TestServiceRTC(object):
         assert len(check_response["message"]) > 1
 
     def test_connection_allocate_v2_version_code_not_int(self, driver):
+        self.start_case_log("test_connection_allocate_v2_version_code_not_int")
         url = "http://{0}:{1}/connection/allocate/v2?channel_id=5&package_name=jp.ogapee.onscripter.release&version_code=test".format(
             driver["remote_ip"], driver["port"])
         header = {"Session-Token": driver["token"], "Peer-Id": driver["peer_id"],
@@ -262,6 +281,7 @@ class TestServiceRTC(object):
 
     # scheduler resp status 2001, err: not found any avm
     def test_connection_allocate_v2_param_wrong(self, driver):
+        self.start_case_log("test_connection_allocate_v2_param_wrong")
         url = "http://{0}:{1}/connection/allocate/v2?channel_id=wrong&package_name=jp.ogapee.onscripter.release&version_code=20211027".format(
             driver["remote_ip"], driver["port"])
         header = {"Session-Token": driver["token"], "Peer-Id": driver["peer_id"],
@@ -275,6 +295,7 @@ class TestServiceRTC(object):
 
     # method GET
     def test_keep_alive(self, driver):
+        self.start_case_log("test_keep_alive")
         # 绑定实例
         self.connection_allocate_v2(driver)
 
@@ -287,6 +308,7 @@ class TestServiceRTC(object):
 
     # 没有绑定实例化，直接请求keep_alive
     def test_keep_alive_without_connection(self, driver):
+        self.start_case_log("test_keep_alive_without_connection")
         url = "http://{0}:{1}/session/keepalive".format(driver["remote_ip"], driver["port"])
         header = {"Session-Token": driver["token"], "x-forwarded-for": driver["x-forwarded-for"]}
         response = RequestHttp().request_response(url=url, method="get", headers=header)
@@ -299,6 +321,7 @@ class TestServiceRTC(object):
 
     # headers中没有传入token
     def test_keep_alive_without_token(self, driver):
+        self.start_case_log("test_keep_alive_without_token")
         url = "http://{0}:{1}/session/keepalive".format(driver["remote_ip"], driver["port"])
         header = {"x-forwarded-for": driver["x-forwarded-for"]}
         response = RequestHttp().request_response(url=url, method="get", headers=header)
@@ -310,6 +333,7 @@ class TestServiceRTC(object):
         assert "get session token error" in check_response["message"]
 
     def test_keep_alive_token_wrong(self, driver):
+        self.start_case_log("test_keep_alive_token_wrong")
         disposable_token = "ad31c761727fbcd2643c73fd32235a6a60a780d43a94dd2e02998ab3a9bea41b"
         url = "http://{0}:{1}/session/keepalive".format(driver["remote_ip"], driver["port"])
         header = {"Session-Token": disposable_token, "x-forwarded-for": driver["x-forwarded-for"]}
@@ -322,6 +346,7 @@ class TestServiceRTC(object):
         assert "invalid session token" in check_response["message"]
 
     def test_session_close(self, driver):
+        self.start_case_log("test_session_close")
         # 绑定实例
         self.connection_allocate_v2(driver)
 
@@ -333,6 +358,7 @@ class TestServiceRTC(object):
         assert check_response["code"] == 0
 
     def test_session_close_without_token(self, driver):
+        self.start_case_log("test_session_close_without_token")
         # 绑定实例
         self.connection_allocate_v2(driver)
 
@@ -346,6 +372,7 @@ class TestServiceRTC(object):
         assert "invalid session token" in check_response["message"]
 
     def test_session_close_without_connection(self, driver):
+        self.start_case_log("test_session_close_without_connection")
         url = "http://{0}:{1}/session/close".format(driver["remote_ip"], driver["port"])
         header = {"Session-Token": driver["token"], "x-forwarded-for": driver["x-forwarded-for"]}
         response = RequestHttp().request_response(url=url, method="get", headers=header)
@@ -357,6 +384,7 @@ class TestServiceRTC(object):
 
     # method GET
     def test_admin_connection_get(self, driver):
+        self.start_case_log("test_admin_connection_get")
         # 绑定实例
         self.connection_allocate_v2(driver)
 
@@ -369,6 +397,7 @@ class TestServiceRTC(object):
         assert check_response["code"] == 0
 
     def test_admin_connection_get_without_connection(self, driver):
+        self.start_case_log("test_admin_connection_get_without_connection")
         url = "http://{0}:{1}/admin/connection/get?sessionToken={2}".format(driver["remote_ip"], driver["port"],
                                                                             driver["token"])
         header = {"x-forwarded-for": driver["x-forwarded-for"]}
@@ -380,6 +409,7 @@ class TestServiceRTC(object):
         assert "invalid session" in check_response["message"]
 
     def test_admin_connection_get_param_without_token(self, driver):
+        self.start_case_log("test_admin_connection_get_param_without_token")
         # 绑定实例
         self.connection_allocate_v2(driver)
 
@@ -393,6 +423,7 @@ class TestServiceRTC(object):
         assert "invalid param" in check_response["message"]
 
     def test_admin_connection_get_token_wrong(self, driver):
+        self.start_case_log("test_admin_connection_get_token_wrong")
         disposable_token = "ad31c761727fbcd2643c73fd32235a6a60a780d43a94dd2e02998ab3a9bea41b"
         url = "http://{0}:{1}/admin/connection/get?sessionToken={2}".format(driver["remote_ip"], driver["port"],
                                                                             disposable_token)
@@ -406,6 +437,7 @@ class TestServiceRTC(object):
 
     # method POST
     def test_admin_agent_msg_closed(self, driver):
+        self.start_case_log("test_admin_agent_msg_closed")
         # 绑定实例
         self.connection_allocate_v2(driver)
         node_id = json.loads(self.connection_get(driver).text)["data"]["connection"]["nodeId"]
@@ -420,6 +452,7 @@ class TestServiceRTC(object):
 
     # @pytest.mark.skip
     # def test_admin_agent_msg_closed_without_node_id(self, driver):
+    #     self.start_case_log("test_admin_agent_msg_closed_without_node_id")
     #     # 绑定实例
     #     url = "http://{0}:{1}/admin/agent/msg".format(driver["remote_ip"], driver["port"])
     #     header = {"x-forwarded-for": driver["x-forwarded-for"]}
@@ -445,6 +478,10 @@ class TestServiceRTC(object):
         response = RequestHttp().request_response(url=url, method="get", headers=header)
         return response
 
+    def start_case_log(self, name):
+        log.info("{0}: {1} start".format(self.__class__.__name__, name))
+
 
 if __name__ == '__main__':
-    pytest.main(["-s", "-q", "test_service_rtc.py"])
+    pytest.main(["-s", "test_service_rtc.py"])
+

@@ -1,6 +1,9 @@
 import hashlib
 import json
 import requests
+import logging
+
+request_log = logging.getLogger("request_http")
 
 
 class RequestHttp(object):
@@ -34,7 +37,12 @@ class RequestHttp(object):
                         response = requests.post(url=kwargs["url"], data=json.dumps(kwargs["data"]))
                 else:
                     response = "error method"
+                    request_log.error("input method error. excepted get or post, actual is {0}".format(kwargs["method"]))
+                request_log.info("response status_code is {0}".format(response.status_code))
+                request_log.info("response text is {0}".format(response.text))
                 return response
+            else:
+                request_log.error("need input method")
         except Exception as E:
             print("error is {0}".format(E))
 

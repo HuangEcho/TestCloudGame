@@ -4,16 +4,14 @@ import base64
 from dependent.env_self import Env
 from dependent.requests_http import RequestHttp
 
-yaml_file = "../../dependent/env/env.yaml"
-
 
 class RouteAvmRegister(object):
     def __init__(self):
         self.tunnel_agent_env = dict
 
-    def get_avm_env(self, file_name=yaml_file):
+    def get_avm_env(self):
         env = Env()
-        env.get_env_info(file_name)
+        env.get_env_info()
         self.tunnel_agent_env = env.get_special_env("tunnel_agent")
 
     def tunnel_route_request(self, avm_id):
@@ -53,8 +51,8 @@ class RouteAvmRegister(object):
         }
         return data
 
-    def main(self, file_name=yaml_file):
-        self.get_avm_env(file_name)
+    def main(self):
+        self.get_avm_env()
         if isinstance(self.tunnel_agent_env, dict):
             try:
                 url = "http://{0}:{1}/tunnel/route".format(self.tunnel_agent_env["remote_ip"], self.tunnel_agent_env["port"])
@@ -74,4 +72,3 @@ class RouteAvmRegister(object):
 
 if __name__ == '__main__':
     RouteAvmRegister().main()
-

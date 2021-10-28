@@ -3,7 +3,7 @@
 
 import yaml
 import os
-yaml_path = os.path.join(os.getcwd(), os.path.join("env", "env.yaml"))
+yaml_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.path.join("env", "env.yaml"))
 
 
 class Env(object):
