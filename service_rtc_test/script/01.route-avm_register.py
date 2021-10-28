@@ -1,8 +1,8 @@
 import time
 import json
-import requests
 import base64
 from dependent.env_self import Env
+from dependent.requests_http import RequestHttp
 
 yaml_file = "../../dependent/env/env.yaml"
 
@@ -47,7 +47,7 @@ class RouteAvmRegister(object):
                 "to": "avm_manager_json",
                 "from": "tunnel_agent"
                 },
-            "sign": config_HTTP.gen_tunnel_sign(timestamp),              # 鉴权sign
+            "sign": RequestHttp().gen_tunnel_sign(timestamp),              # 鉴权sign
             "data": str(timestamp),                                     # 鉴权data
             "wait_response": 5                                   # 等待响应超时时间，单位S，若该值大于0，将等待对应msg_id的响应路由消息
         }
@@ -60,7 +60,8 @@ class RouteAvmRegister(object):
                 url = "http://{0}:{1}/tunnel/route".format(self.tunnel_agent_env["remote_ip"], self.tunnel_agent_env["port"])
                 for num in range(self.tunnel_agent_env["num_start"], self.tunnel_agent_env["num_end"]):
                     data = self.tunnel_route_request(num)
-                    response = requests.post(url, data=json.dumps(data))
+                    response = RequestHttp().request_response(url=url, method="post", data=data)
+                    # response = requests.post(url, data=json.dumps(data))
                     # print(json.dumps(json.loads(response.text), indent=4))
                     print(json.dumps(json.loads(base64.b64decode(json.loads(response.text)["route"]["body"]).decode()),
                                      indent=4))

@@ -8,6 +8,7 @@ import random
 import re
 import logging
 from dependent.env_self import Env
+from dependent.requests_http import RequestHttp
 
 log = logging.getLogger("test_service_rtc")
 yaml_file = "../dependent/env/env.yaml"
@@ -55,7 +56,7 @@ class TestServiceRTC(object):
     def test_peer_init(self, driver):
         url = "http://{0}:{1}/peer/init".format(driver["remote_ip"], driver["port"])
         header = {"x-forwarded-for": driver["x-forwarded-for"]}
-        response = self.request_response(url=url, method="get", headers=header)
+        response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
         check_response = json.loads(response.text)
         assert check_response["code"] == 0
@@ -69,7 +70,7 @@ class TestServiceRTC(object):
     def test_session_create(self, driver):
         url = "http://{0}:{1}/session/create".format(driver["remote_ip"], driver["port"])
         header = {"userid": "123", "appid": "test", "x-forwarded-for": driver["x-forwarded-for"]}
-        response = self.request_response(url=url, method="get", headers=header)
+        response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
         check_response = json.loads(response.text)
         assert check_response["code"] == 0
@@ -79,7 +80,7 @@ class TestServiceRTC(object):
     def test_session_create_without_userid(self, driver):
         url = "http://{0}:{1}/session/create".format(driver["remote_ip"], driver["port"])
         header = {"appid": "test", "x-forwarded-for": driver["x-forwarded-for"]}
-        response = self.request_response(url=url, method="get", headers=header)
+        response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
         check_response = json.loads(response.text)
         assert check_response["code"] == 1
@@ -88,7 +89,7 @@ class TestServiceRTC(object):
     def test_session_create_without_appid(self, driver):
         url = "http://{0}:{1}/session/create".format(driver["remote_ip"], driver["port"])
         header = {"userid": "123", "x-forwarded-for": driver["x-forwarded-for"]}
-        response = self.request_response(url=url, method="get", headers=header)
+        response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
         check_response = json.loads(response.text)
         assert check_response["code"] == 1
@@ -97,7 +98,7 @@ class TestServiceRTC(object):
     def test_session_create_without_userid_or_appid(self, driver):
         url = "http://{0}:{1}/session/create".format(driver["remote_ip"], driver["port"])
         header = {"x-forwarded-for": driver["x-forwarded-for"]}
-        response = self.request_response(url=url, method="get", headers=header)
+        response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
         check_response = json.loads(response.text)
         assert check_response["code"] == 1
@@ -106,7 +107,7 @@ class TestServiceRTC(object):
     def test_session_create_userid_not_int(self, driver):
         url = "http://{0}:{1}/session/create".format(driver["remote_ip"], driver["port"])
         header = {"userid": "test", "x-forwarded-for": driver["x-forwarded-for"]}
-        response = self.request_response(url=url, method="get", headers=header)
+        response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
         check_response = json.loads(response.text)
         assert check_response["code"] == 1
@@ -119,7 +120,7 @@ class TestServiceRTC(object):
             driver["remote_ip"], driver["port"])
         header = {"Session-Token": driver["token"], "Peer-Id": driver["peer_id"],
                   "x-forwarded-for": driver["x-forwarded-for"]}
-        response = self.request_response(url=url, method="get", headers=header)
+        response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
         check_response = json.loads(response.text)
         assert check_response["code"] == 0
@@ -135,7 +136,7 @@ class TestServiceRTC(object):
             driver["remote_ip"], driver["port"])
         header = {"Session-Token": disposable_token,
                   "x-forwarded-for": driver["x-forwarded-for"]}
-        response = self.request_response(url=url, method="get", headers=header)
+        response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
         check_response = json.loads(response.text)
         assert check_response["code"] == 700
@@ -148,7 +149,7 @@ class TestServiceRTC(object):
             driver["remote_ip"], driver["port"])
         header = {"Session-Token": driver["token"], "Peer-Id": driver["peer_id"],
                   "x-forwarded-for": driver["x-forwarded-for"]}
-        response = self.request_response(url=url, method="get", headers=header)
+        response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
         check_response = json.loads(response.text)
         assert check_response["code"] == 1
@@ -162,7 +163,7 @@ class TestServiceRTC(object):
             driver["remote_ip"], driver["port"])
         header = {"Session-Token": driver["token"], "Peer-Id": driver["peer_id"],
                   "x-forwarded-for": driver["x-forwarded-for"]}
-        response = self.request_response(url=url, method="get", headers=header)
+        response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
         check_response = json.loads(response.text)
         assert check_response["code"] == 1
@@ -176,7 +177,7 @@ class TestServiceRTC(object):
             driver["remote_ip"], driver["port"])
         header = {"Session-Token": driver["token"], "Peer-Id": driver["peer_id"],
                   "x-forwarded-for": driver["x-forwarded-for"]}
-        response = self.request_response(url=url, method="get", headers=header)
+        response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
         check_response = json.loads(response.text)
         assert check_response["code"] == 1
@@ -190,7 +191,7 @@ class TestServiceRTC(object):
             driver["remote_ip"], driver["port"])
         header = {"Session-Token": driver["token"], "Peer-Id": driver["peer_id"],
                   "x-forwarded-for": driver["x-forwarded-for"]}
-        response = self.request_response(url=url, method="get", headers=header)
+        response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
         check_response = json.loads(response.text)
         assert check_response["code"] == 1
@@ -206,7 +207,7 @@ class TestServiceRTC(object):
             driver["remote_ip"], driver["port"])
         header = {"Session-Token": driver["token"], "Peer-Id": driver["peer_id"],
                   "x-forwarded-for": driver["x-forwarded-for"]}
-        response = self.request_response(url=url, method="get", headers=header)
+        response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
         check_response = json.loads(response.text)
         assert check_response["code"] == 1
@@ -219,7 +220,7 @@ class TestServiceRTC(object):
             driver["remote_ip"], driver["port"])
         header = {"Session-Token": driver["token"], "Peer-Id": driver["peer_id"],
                   "x-forwarded-for": driver["x-forwarded-for"]}
-        response = self.request_response(url=url, method="get", headers=header)
+        response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
         check_response = json.loads(response.text)
         assert check_response["code"] == 1
@@ -230,7 +231,7 @@ class TestServiceRTC(object):
             driver["remote_ip"], driver["port"])
         header = {"Session-Token": driver["token"], "Peer-Id": driver["peer_id"],
                   "x-forwarded-for": driver["x-forwarded-for"]}
-        response = self.request_response(url=url, method="get", headers=header)
+        response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
         check_response = json.loads(response.text)
         assert check_response["code"] == 1
@@ -244,7 +245,7 @@ class TestServiceRTC(object):
             driver["remote_ip"], driver["port"])
         header = {"Session-Token": driver["token"], "Peer-Id": driver["peer_id"],
                   "x-forwarded-for": driver["x-forwarded-for"]}
-        response = self.request_response(url=url, method="get", headers=header)
+        response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
         check_response = json.loads(response.text)
         assert check_response["code"] == 1
@@ -258,7 +259,7 @@ class TestServiceRTC(object):
 
         url = "http://{0}:{1}/session/keepalive".format(driver["remote_ip"], driver["port"])
         header = {"Session-Token": driver["token"], "x-forwarded-for": driver["x-forwarded-for"]}
-        response = self.request_response(url=url, method="get", headers=header)
+        response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
         check_response = json.loads(response.text)
         assert check_response["code"] == 0
@@ -267,7 +268,7 @@ class TestServiceRTC(object):
     def test_keep_alive_without_connection(self, driver):
         url = "http://{0}:{1}/session/keepalive".format(driver["remote_ip"], driver["port"])
         header = {"Session-Token": driver["token"], "x-forwarded-for": driver["x-forwarded-for"]}
-        response = self.request_response(url=url, method="get", headers=header)
+        response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
         check_response = json.loads(response.text)
         assert check_response["code"] == 700
@@ -279,7 +280,7 @@ class TestServiceRTC(object):
     def test_keep_alive_without_token(self, driver):
         url = "http://{0}:{1}/session/keepalive".format(driver["remote_ip"], driver["port"])
         header = {"x-forwarded-for": driver["x-forwarded-for"]}
-        response = self.request_response(url=url, method="get", headers=header)
+        response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
         check_response = json.loads(response.text)
         assert check_response["code"] == 700
@@ -291,7 +292,7 @@ class TestServiceRTC(object):
         disposable_token = "ad31c761727fbcd2643c73fd32235a6a60a780d43a94dd2e02998ab3a9bea41b"
         url = "http://{0}:{1}/session/keepalive".format(driver["remote_ip"], driver["port"])
         header = {"Session-Token": disposable_token, "x-forwarded-for": driver["x-forwarded-for"]}
-        response = self.request_response(url=url, method="get", headers=header)
+        response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
         check_response = json.loads(response.text)
         assert check_response["code"] == 700
@@ -305,7 +306,7 @@ class TestServiceRTC(object):
 
         url = "http://{0}:{1}/session/close".format(driver["remote_ip"], driver["port"])
         header = {"Session-Token": driver["token"], "x-forwarded-for": driver["x-forwarded-for"]}
-        response = self.request_response(url=url, method="get", headers=header)
+        response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
         check_response = json.loads(response.text)
         assert check_response["code"] == 0
@@ -316,7 +317,7 @@ class TestServiceRTC(object):
 
         url = "http://{0}:{1}/session/close".format(driver["remote_ip"], driver["port"])
         header = {"x-forwarded-for": driver["x-forwarded-for"]}
-        response = self.request_response(url=url, method="get", headers=header)
+        response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
         check_response = json.loads(response.text)
         assert check_response["code"] == 700
@@ -326,7 +327,7 @@ class TestServiceRTC(object):
     def test_session_close_without_connection(self, driver):
         url = "http://{0}:{1}/session/close".format(driver["remote_ip"], driver["port"])
         header = {"Session-Token": driver["token"], "x-forwarded-for": driver["x-forwarded-for"]}
-        response = self.request_response(url=url, method="get", headers=header)
+        response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
         check_response = json.loads(response.text)
         assert check_response["code"] == 700
@@ -341,7 +342,7 @@ class TestServiceRTC(object):
         url = "http://{0}:{1}/admin/connection/get?sessionToken={2}".format(driver["remote_ip"], driver["port"],
                                                                             driver["token"])
         header = {"x-forwarded-for": driver["x-forwarded-for"]}
-        response = self.request_response(url=url, method="get", headers=header)
+        response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
         check_response = json.loads(response.text)
         assert check_response["code"] == 0
@@ -350,7 +351,7 @@ class TestServiceRTC(object):
         url = "http://{0}:{1}/admin/connection/get?sessionToken={2}".format(driver["remote_ip"], driver["port"],
                                                                             driver["token"])
         header = {"x-forwarded-for": driver["x-forwarded-for"]}
-        response = self.request_response(url=url, method="get", headers=header)
+        response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
         check_response = json.loads(response.text)
         assert check_response["code"] == 1
@@ -363,7 +364,7 @@ class TestServiceRTC(object):
 
         url = "http://{0}:{1}/admin/connection/get".format(driver["remote_ip"], driver["port"])
         header = {"x-forwarded-for": driver["x-forwarded-for"]}
-        response = self.request_response(url=url, method="get", headers=header)
+        response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
         check_response = json.loads(response.text)
         assert check_response["code"] == 1
@@ -375,7 +376,7 @@ class TestServiceRTC(object):
         url = "http://{0}:{1}/admin/connection/get?sessionToken={2}".format(driver["remote_ip"], driver["port"],
                                                                             disposable_token)
         header = {"x-forwarded-for": driver["x-forwarded-for"]}
-        response = self.request_response(url=url, method="get", headers=header)
+        response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
         check_response = json.loads(response.text)
         assert check_response["code"] == 1
@@ -391,7 +392,7 @@ class TestServiceRTC(object):
         header = {"x-forwarded-for": driver["x-forwarded-for"]}
         data = {"node_id": node_id,
                 "data": {"type": "closed", "session_id": driver["token"], "reason": "test", "code": 1}}
-        response = self.request_response(url=url, method="post", headers=header, data=data)
+        response = RequestHttp().request_response(url=url, method="post", headers=header, data=data)
         assert response.status_code == 200
         check_response = json.loads(response.text)
         assert check_response["code"] == 0
@@ -402,28 +403,10 @@ class TestServiceRTC(object):
     #     url = "http://{0}:{1}/admin/agent/msg".format(driver["remote_ip"], driver["port"])
     #     header = {"x-forwarded-for": driver["x-forwarded-for"]}
     #     data = {"data": {"type": "closed", "session_id": driver["token"], "reason": "test", "code": 1}}
-    #     response = self.request_response(url=url, method="post", headers=header, data=data)
+    #     response = RequestHttp().request_response(url=url, method="post", headers=header, data=data)
     #     assert response.status_code == 200
     #     check_response = json.loads(response.text)
     #     assert check_response["code"] == 0
-
-    def request_response(self, **kwargs):
-        # 暂时只写两种方法，如果有新增的，再增加，都保证至少有url和headers
-        try:
-            if "method" in kwargs:
-                if kwargs["method"] == "get":
-                    response = requests.get(url=kwargs["url"], headers=kwargs["headers"])
-                elif kwargs["method"] == "post":
-                    response = requests.post(url=kwargs["url"], data=json.dumps(kwargs["data"]),
-                                             headers=kwargs["headers"])
-                else:
-                    response = "error method"
-                if isinstance(response, dict):
-                    log.debug("response status_code is {0}, response text is {1}".format(response["status_code"],
-                                                                                         response["text"]))
-                return response
-        except Exception as E:
-            print("error is {0}".format(E))
 
     # 为终端peer调度可用的实例，并将调度结果信息绑定到peer的session会话信息中
     def connection_allocate_v2(self, driver):
@@ -431,14 +414,14 @@ class TestServiceRTC(object):
             driver["remote_ip"], driver["port"])
         header = {"Session-Token": driver["token"], "Peer-Id": driver["peer_id"],
                   "x-forwarded-for": driver["x-forwarded-for"]}
-        response = self.request_response(url=url, method="get", headers=header)
+        response = RequestHttp().request_response(url=url, method="get", headers=header)
         return response
 
     def connection_get(self, driver):
         url = "http://{0}:{1}/admin/connection/get?sessionToken={2}".format(driver["remote_ip"], driver["port"],
                                                                             driver["token"])
         header = {"x-forwarded-for": driver["x-forwarded-for"]}
-        response = self.request_response(url=url, method="get", headers=header)
+        response = RequestHttp().request_response(url=url, method="get", headers=header)
         return response
 
 

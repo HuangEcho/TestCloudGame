@@ -1,6 +1,6 @@
-import requests
 import json
 from dependent.env_self import Env
+from dependent.requests_http import RequestHttp
 
 yaml_file = "../../dependent/env/env.yaml"
 
@@ -36,7 +36,7 @@ class AvmTag(object):
                     amv = "shenzhen_mobile_test_" + str(num)
                     avm_ids.append(amv)
                 data = self.tag_data(avm_ids)
-                response = requests.post(url, data=json.dumps(data), headers=headers)
+                response = RequestHttp().request_response(method="post", url=url, data=data, headers=headers)
                 print(json.dumps(json.loads(response.text), indent=4))
 
             except Exception as E:

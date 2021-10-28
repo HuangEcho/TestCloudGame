@@ -1,6 +1,6 @@
-import requests
 import random
 from dependent.env_self import Env
+from dependent.requests_http import RequestHttp
 
 yaml_file = "../../dependent/env/env.yaml"
 pre_url = "http://{0}:{1}/admin/node/release?node_id={2}"
@@ -37,7 +37,7 @@ class ReleaseNode(object):
                         "x-forwarded-for": ip.format(ip_path_one, ip_path_two)
                     }
                     url = pre_url.format(self.rtc_env["remote_ip"], self.rtc_env["port"], node_id.format(num))
-                    response = requests.get(url, headers=headers)
+                    response = RequestHttp().request_response(method="get", url=url, headers=headers)
                     print(response.status_code, response.text)
             except Exception as E:
                 print("error is {0}".format(E))
