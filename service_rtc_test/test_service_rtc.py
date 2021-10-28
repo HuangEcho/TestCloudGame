@@ -29,11 +29,16 @@ class TestServiceRTC(object):
     @pytest.fixture(scope="class")
     def workspace(self):
         print("workspace ready")
+        # 注册avm
         RouteAvmRegister().main(yaml_file)
+        # avm上报心跳
         RouteAvmHeartBeat().main(yaml_file)
+        # 上架avm
         PutOnAvm().main(yaml_file)
+        # 给avm打tag
         AvmTag().main(yaml_file)
         yield
+        # 释放节点
         ReleaseNode().main(yaml_file)
         print("workspace clean")
 
