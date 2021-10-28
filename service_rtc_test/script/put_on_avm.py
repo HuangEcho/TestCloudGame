@@ -9,9 +9,9 @@ class PutOnAvm(object):
     def __init__(self):
         self.avm_env = dict
 
-    def get_avm_env(self):
+    def get_avm_env(self, file_name=yaml_file):
         env = Env()
-        env.get_env_info(yaml_file)
+        env.get_env_info(file_name)
         self.avm_env = env.get_special_env("avm_manager")
 
     def set_status(self, avm_id):
@@ -23,8 +23,8 @@ class PutOnAvm(object):
         }
         return data
 
-    def main(self):
-        self.get_avm_env()
+    def main(self, file_name=yaml_file):
+        self.get_avm_env(file_name)
         if isinstance(self.avm_env, dict):
             headers = {"Content-Type": "application/json"}
             # 这个接口似乎允许高并发，不会因为频繁请求而拒绝

@@ -10,6 +10,12 @@ import logging
 from dependent.env_self import Env
 from dependent.requests_http import RequestHttp
 
+from service_rtc_test.script.route_avm_register import RouteAvmRegister
+from service_rtc_test.script.route_avm_heartbeat import RouteAvmHeartBeat
+from service_rtc_test.script.put_on_avm import PutOnAvm
+from service_rtc_test.script.avm_tag import AvmTag
+from service_rtc_test.script.release_node import ReleaseNode
+
 log = logging.getLogger("test_service_rtc")
 yaml_file = "../dependent/env/env.yaml"
 # 增加一些ip地址
@@ -19,10 +25,20 @@ for_ip = "192.168.{0}.{1}"
 
 
 class TestServiceRTC(object):
-    # 可以把driver设置为全局变量
-    # 抓包看，这里指执行了一次
+
+    @pytest.fixture(scope="class")
+    def workspace(self):
+        print("workspace ready")
+        RouteAvmRegister().main(yaml_file)
+        RouteAvmHeartBeat().main(yaml_file)
+        PutOnAvm().main(yaml_file)
+        AvmTag().main(yaml_file)
+        yield
+        ReleaseNode().main(yaml_file)
+        print("workspace clean")
+
     @pytest.fixture(scope="function")
-    def driver(self):
+    def driver(self, workspace):
         env = Env()
         env.get_env_info(yaml_file)
         driver = env.env["service_rtc"]
@@ -426,4 +442,4 @@ class TestServiceRTC(object):
 
 
 if __name__ == '__main__':
-    pytest.main(["-s", "test_service_rtc.py"])
+    pytest.main(["-s", "-q", "test_service_rtc.py"])

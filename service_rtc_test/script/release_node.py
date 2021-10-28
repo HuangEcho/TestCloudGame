@@ -15,13 +15,13 @@ class ReleaseNode(object):
     def __init__(self):
         self.rtc_env = dict
 
-    def get_rtc_env(self):
+    def get_rtc_env(self, file_name=yaml_file):
         env = Env()
-        env.get_env_info(yaml_file)
+        env.get_env_info(file_name)
         self.rtc_env = env.get_special_env("service_rtc")
 
-    def main(self):
-        self.get_rtc_env()
+    def main(self, file_name=yaml_file):
+        self.get_rtc_env(file_name)
         global ip_path_one, ip_path_two
         if isinstance(self.rtc_env, dict):
             try:

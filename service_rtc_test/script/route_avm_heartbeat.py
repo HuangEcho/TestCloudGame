@@ -15,9 +15,9 @@ class RouteAvmHeartBeat(object):
     def __init__(self):
         self.tunnel_agent_env = dict
 
-    def get_avm_env(self):
+    def get_avm_env(self, file_name=yaml_file):
         env = Env()
-        env.get_env_info(yaml_file)
+        env.get_env_info(file_name)
         self.tunnel_agent_env = env.get_special_env("tunnel_agent")
 
     def heart_beat(self, avm_id):
@@ -79,8 +79,8 @@ class RouteAvmHeartBeat(object):
         except Exception as E:
             print("error is {0}".format(E))
 
-    def main(self):
-        self.get_avm_env()
+    def main(self, file_name=yaml_file):
+        self.get_avm_env(file_name)
         if isinstance(self.tunnel_agent_env, dict):
             try:
                 url = "http://{0}:{1}/tunnel/route".format(self.tunnel_agent_env["remote_ip"], self.tunnel_agent_env["port"])

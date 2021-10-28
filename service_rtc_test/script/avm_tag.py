@@ -9,9 +9,9 @@ class AvmTag(object):
     def __init__(self):
         self.avm_env = dict
 
-    def get_avm_env(self):
+    def get_avm_env(self, file_name=yaml_file):
         env = Env()
-        env.get_env_info(yaml_file)
+        env.get_env_info(file_name)
         self.avm_env = env.get_special_env("avm_manager")
 
     def tag_data(self, avm_ids):
@@ -25,8 +25,8 @@ class AvmTag(object):
         }
         return data
 
-    def main(self):
-        self.get_avm_env()
+    def main(self, file_name=yaml_file):
+        self.get_avm_env(file_name)
         if isinstance(self.avm_env, dict):
             url = "http://{0}:{1}/v1/avm/tag/add".format(self.avm_env["remote_ip"], self.avm_env["port"])
             headers = {"Content-Type": "application/json"}
