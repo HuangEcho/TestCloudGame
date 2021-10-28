@@ -29,7 +29,7 @@ class PutOnAvm(object):
         self.get_avm_env()
         if isinstance(self.avm_env, dict):
             headers = {"Content-Type": "application/json"}
-            url = "http://{0}:{1}/v1/avm/service_status/set".format(self.avm_env["remote_ip"], self.avm_env["ip"])
+            url = "http://{0}:{1}/v1/avm/service_status/set".format(self.avm_env["remote_ip"], self.avm_env["port"])
             try:
                 for num in range(self.avm_env["num_start"], self.avm_env["num_end"]):
                     data = self.set_status(num)

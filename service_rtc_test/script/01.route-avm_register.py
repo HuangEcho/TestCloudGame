@@ -57,7 +57,7 @@ class RouteAvmRegister(object):
         self.get_avm_env()
         if isinstance(self.tunnel_agent_env, dict):
             try:
-                url = "http://{0}:{1}/tunnel/route".format(self.tunnel_agent_env["remote_ip"], self.tunnel_agent_env["ip"])
+                url = "http://{0}:{1}/tunnel/route".format(self.tunnel_agent_env["remote_ip"], self.tunnel_agent_env["port"])
                 for num in range(self.tunnel_agent_env["num_start"], self.tunnel_agent_env["num_end"]):
                     data = self.tunnel_route_request(num)
                     c = config_HTTP.HTTPRequest(url=url, method='POST', data=data)

@@ -3,7 +3,7 @@ import random
 from dependent.env_self import Env
 
 yaml_file = "../../dependent/env/env.yaml"
-pre_url = "http:{0}:{1}/admin/node/release?node_id={2}"
+pre_url = "http://{0}:{1}/admin/node/release?node_id={2}"
 node_id = "shenzhen_mobile_test_{0}"
 # 增加一些ip地址
 ip_path_one = random.randint(2, 10)
@@ -18,7 +18,7 @@ class ReleaseNode(object):
     def get_rtc_env(self):
         env = Env()
         env.get_env_info(yaml_file)
-        self.rtc_env = env.get_special_env("scheduler")
+        self.rtc_env = env.get_special_env("service_rtc")
 
     def main(self):
         self.get_rtc_env()
@@ -36,7 +36,7 @@ class ReleaseNode(object):
                         "Content-Type": "application/json",
                         "x-forwarded-for": ip.format(ip_path_one, ip_path_two)
                     }
-                    url = pre_url.format(self.rtc_env["remote_ip"], self.rtc_env["ip"], node_id.format(num))
+                    url = pre_url.format(self.rtc_env["remote_ip"], self.rtc_env["port"], node_id.format(num))
                     response = requests.get(url, headers=headers)
                     print(response.status_code, response.text)
             except Exception as E:

@@ -29,7 +29,7 @@ class AvmTag(object):
     def main(self):
         self.get_avm_env()
         if isinstance(self.avm_env, dict):
-            url = "http://{0}:{1}/v1/avm/tag/add".format(self.avm_env["remote_ip"], self.avm_env["ip"])
+            url = "http://{0}:{1}/v1/avm/tag/add".format(self.avm_env["remote_ip"], self.avm_env["port"])
             headers = {"Content-Type": "application/json"}
             try:
                 avm_ids = []
