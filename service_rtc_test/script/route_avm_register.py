@@ -61,8 +61,8 @@ class RouteAvmRegister(object):
                     response = RequestHttp().request_response(url=url, method="post", data=data)
                     # response = requests.post(url, data=json.dumps(data))
                     # print(json.dumps(json.loads(response.text), indent=4))
-                    print(json.dumps(json.loads(base64.b64decode(json.loads(response.text)["route"]["body"]).decode()),
-                                     indent=4))
+                    # print(json.dumps(json.loads(base64.b64decode(json.loads(response.text)["route"]["body"]).decode()),
+                    #                  indent=4))
                     time.sleep(1)
             except Exception as E:
                 print("error is {0}".format(E))

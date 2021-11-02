@@ -35,7 +35,7 @@ class AvmTag(object):
                     avm_ids.append(amv)
                 data = self.tag_data(avm_ids)
                 response = RequestHttp().request_response(method="post", url=url, data=data, headers=headers)
-                print(json.dumps(json.loads(response.text), indent=4))
+                # print(json.dumps(json.loads(response.text), indent=4))
 
             except Exception as E:
                 print("error is {0}".format(E))

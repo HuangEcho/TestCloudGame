@@ -37,7 +37,7 @@ class ReleaseNode(object):
                     }
                     url = pre_url.format(self.rtc_env["remote_ip"], self.rtc_env["port"], node_id.format(num))
                     response = RequestHttp().request_response(method="get", url=url, headers=headers)
-                    print(response.status_code, response.text)
+                    # print(response.status_code, response.text)
             except Exception as E:
                 print("error is {0}".format(E))
 

@@ -43,8 +43,8 @@ class TestServiceRTC(object):
 
     # 如果不想跑workspace，可注释掉
     @pytest.fixture(scope="function")
-    # def driver(self, workspace):
-    def driver(self):
+    def driver(self, workspace):
+    # def driver(self):
         log.info("test case setup")
         env = Env()
         env.get_env_info()

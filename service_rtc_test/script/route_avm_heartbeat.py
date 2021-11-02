@@ -86,7 +86,7 @@ class RouteAvmHeartBeat(object):
                     data = self.heart_beat(num)
                     response = RequestHttp().request_response(method="post", url=url, data=data)
                     # print(json.dumps(json.loads(response.text), indent=4))
-                    print(json.dumps(json.loads(base64.b64decode(json.loads(response.text)["route"]["body"]).decode()), indent=4))
+                    # print(json.dumps(json.loads(base64.b64decode(json.loads(response.text)["route"]["body"]).decode()), indent=4))
                     time.sleep(1)
             except Exception as E:
                 print("error is {0}".format(E))

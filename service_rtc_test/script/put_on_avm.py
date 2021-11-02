@@ -31,7 +31,7 @@ class PutOnAvm(object):
                 for num in range(self.avm_env["num_start"], self.avm_env["num_end"]):
                     data = self.set_status(num)
                     response = RequestHttp().request_response(method="post", url=url, data=data, headers=headers)
-                    print(json.dumps(json.loads(response.text), indent=4))
+                    # print(json.dumps(json.loads(response.text), indent=4))
             except Exception as E:
                 print("error is {0}".format(E))
 
