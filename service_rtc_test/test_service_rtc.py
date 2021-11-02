@@ -43,8 +43,8 @@ class TestServiceRTC(object):
 
     # 如果不想跑workspace，可注释掉
     @pytest.fixture(scope="function")
-    def driver(self, workspace):
-    # def driver(self):
+    # def driver(self, workspace):
+    def driver(self):
         log.info("test case setup")
         env = Env()
         env.get_env_info()
@@ -177,6 +177,7 @@ class TestServiceRTC(object):
         # assert "invalid session" in check_response["message"]
 
     # method GET
+    # 目前测试环境里有一个not_exist的section，会导致500的状态码，后面要问一下其他同事，如何在测试环境中去掉这个section
     def test_connection_allocate_v2_without_channel(self, driver):
         self.start_case_log("test_connection_allocate_v2_without_channel")
         url = "http://{0}:{1}/connection/allocate/v2?package_name=jp.ogapee.onscripter.release&version_code=20210831".format(

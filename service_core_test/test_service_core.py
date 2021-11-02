@@ -14,12 +14,16 @@ log = logging.getLogger("test_service_core")
 # 增加一些ip地址
 # 测试域名console.galaxy142.com host绑定192.168.126.142再验证
 
+# 考虑使用钉钉apk的url吧，虽然150M，但是没有防盗链啊
+# 考虑测试环境中部署几个apk的地址，后续就用那个地址来测试
+apk_url = "https://download.alicdn.com/wireless/dingtalk/latest/rimet_10002068.apk"
+
 
 class TestServiceRTC(object):
     @pytest.fixture(scope="session")
     def driver(self):
         # 设置默认的id值
-        driver = {"customer_id": 1, "chan_id": "test_service_core", "id": 39}
+        driver = {"customer_id": 1, "chan_id": "test_service_core", "channel_id": 39}
 
         url = "http://console.galaxy142.com/login"
         response = requests.get(url)
@@ -36,12 +40,11 @@ class TestServiceRTC(object):
         assert response.status_code == 200
         check_response = json.loads(response.text)
         assert check_response["code"] == 0
-        # 不确定要校验那些参数，要不先不写了，获取第一个id吧
-        if "result" in check_response and len(check_response["result"]) > 0:
-            assert "id" in check_response["result"][0]
-            for customer_info in check_response["result"]:
-                if customer_info["name"] == "网心科技":
-                    driver["customer_id"] = check_response["result"][0]["id"]
+        assert "result" in check_response
+        assert "id" in check_response["result"][0]
+        for customer_info in check_response["result"]:
+            if customer_info["name"] == "网心科技":
+                driver["customer_id"] = check_response["result"][0]["id"]
 
     def test_channel_list(self, driver):
         url = "http://console.galaxy142.com/gameManage/index/internal/channel/list"
@@ -51,11 +54,11 @@ class TestServiceRTC(object):
         assert response.status_code == 200
         check_response = json.loads(response.text)
         assert check_response["code"] == 0
-        if "result" in check_response and len(check_response["result"]) > 0:
-            for channel_info in check_response["result"]:
-                assert channel_info["uid"] == driver["customer_id"]
-                if channel_info["name"] == "service_core测试使用":
-                    driver["id"] = channel_info["id"]
+        assert "result" in check_response
+        for channel_info in check_response["result"]:
+            assert channel_info["uid"] == driver["customer_id"]
+            if channel_info["name"] == "service_core测试使用":
+                driver["channel_id"] = channel_info["id"]
 
     def test_channel_add(self, driver):
         url = "http://console.galaxy142.com/gameManage/index/internal/channel/add"
@@ -97,9 +100,18 @@ class TestServiceRTC(object):
         assert check_response["code"] == 1
         assert "参数错误" in check_response["error"]
 
-    # def test_game_list(self, driver):
-    #     url = "http://console.galaxy142.com/gameManage/index/internal/game/list"
-    #     headers = driver["headers"]
+    def test_game_list(self, driver):
+        url = "http://console.galaxy142.com/gameManage/index/internal/game/list"
+        headers = driver["headers"]
+        data = {"params": {"forward_method": "GET", "uid": driver["customer_id"], "channel_id": driver["channel_id"]}}
+        response = RequestHttp().request_response(method="post", url=url, headers=headers, data=data)
+        assert response.status_code == 200
+        check_response = json.loads(response.text)
+        assert check_response["code"] == 0
+        assert "result" in check_response
+        for result_info in check_response["result"]:
+            assert result_info["uid"] == driver["customer_id"]
+            assert result_info["channel_id"] == driver["channel_id"]
 
 
 if __name__ == '__main__':
