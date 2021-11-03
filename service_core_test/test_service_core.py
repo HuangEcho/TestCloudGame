@@ -8,7 +8,6 @@ import random
 import re
 import os
 import logging
-from requests_toolbelt import MultipartEncoder
 from dependent.env_self import Env
 from dependent.requests_http import RequestHttp
 
@@ -70,7 +69,8 @@ class TestServiceRTC(object):
     def test_channel_add(self, driver):
         url = "http://console.galaxy142.com/gameManage/index/internal/channel/add"
         headers = driver["headers"]
-        data = {"params": {"forward_method": "POST", "uid": driver["customer_id"], "chan_id": "test_service_core", "name": "chan_id duplicate"}}
+        data = {"params": {"forward_method": "POST", "uid": driver["customer_id"], "chan_id": "test_service_core",
+                           "name": "chan_id duplicate"}}
         response = RequestHttp().request_response(method="post", url=url, headers=headers, data=data)
         assert response.status_code == 200
         check_response = json.loads(response.text)
@@ -121,30 +121,52 @@ class TestServiceRTC(object):
             assert result_info["channel_id"] == driver["channel_id"]
 
     def test_add(self, driver):
-        # 上传apk
-        url = "http://api-console.buffcloud.com/upload/apk"
+        # 先上传apk，获取apk信息
+        upload_url = "http://api-console.buffcloud.com/upload/apk"
+        # data里不需要有要上传的文件的字段
+        data = {"uid": driver["customer_id"], "chan_id": driver["channel_id"]}
+        # Headers中不需要填写Content-Type，上传后会自动填写的
+        headers = {"X-Requested-With": "XMLHttpRequest", "User-Token": driver["upload_token"]}
+        # 这里的data不能用json格式
+        response = requests.post(upload_url, data=data, headers=headers, files={"file": open(apk_file, "rb")})
+        assert response.status_code == 200
+        upload_response_info = json.loads(response.text)
+        assert upload_response_info["code"] == 0
+        assert "data" in upload_response_info
+        assert "download_url" in upload_response_info["data"]
+        assert "filemd5" in upload_response_info["data"]
 
-        options_headers = {"Access-Control-Request-Headers": "user-token,x-requested-with", "Access-Control-Request-Method": "POST"}
-        response = requests.options(url, headers=options_headers)
-        print(response.status_code)
-        assert response.status_code == 204
-        data = {"uid": driver["customer_id"], "chan_id": driver["channel_id"], "file": open(apk_file, "rb").read()}
-        m = MultipartEncoder(
-            fields={
+        # 本地添加
+        add_url = "http://console.galaxy142.com/gameManage/index/internal/game/add"
+        headers = driver["headers"]
+        add_data = {
+            "params": {
+                "forward_method": "POST",
                 "uid": driver["customer_id"],
-                "chan_id": driver["channel_id"],
-                "file": (os.path.basename(apk_file), open(apk_file, "rb"))
-            },
-            encoding="utf-8"
-        )
-
-        # multipart/form-data上传，X-Requested-With异步
-        headers = {"Content-Type": m.content_type, "X-Requested-With": "XMLHttpRequest", "User-Token": driver["upload_token"]}
-        # 二进制文件上传，data不能用json格式
-        response = requests.post(url, data=m, headers=headers)
+                "channel_id": driver["channel_id"],
+                "desc": "test",
+                "name": "test apk",
+                "download_url": upload_response_info["data"]["download_url"],
+                "file_md5": upload_response_info["data"]["filemd5"],
+                "package_name": upload_response_info["data"]["package_name"],
+                "instance_type": 0,
+                "max_concurrent": 0,
+                "quality": "720p",
+                "category_id": 1,
+                "type_ids": "17, 18",
+                "upload_type": 1,
+                "version_code": upload_response_info["data"]["version_code"],
+                "version_name": upload_response_info["data"]["version_name"]
+            }
+        }
+        response = RequestHttp().request_response(method="post", url=add_url, data=add_data, headers=headers)
         print(response.status_code, response.text)
         assert response.status_code == 200
-
+        add_response_info = json.loads(response.text)
+        assert add_response_info["code"] == 0
+        assert "result" in add_response_info
+        gid = add_response_info["result"]["gid"]
+        print(gid)
 
 
 if __name__ == '__main__':
