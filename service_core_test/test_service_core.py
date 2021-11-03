@@ -60,6 +60,12 @@ class TestServiceRTC(object):
         # assert "filemd5" in upload_response_info["data"]
         return json.loads(response.text)["data"]
 
+    def game_delete(self, driver, gid):
+        game_delete_url = "http://console.galaxy142.com/gameManage/index/internal/game/delete"
+        data = {"params": {"gid": gid}}
+        response = RequestHttp().request_response(method="post", url=game_delete_url, data=data, headers=driver["headers"])
+        return response
+
     # method: POST
     def test_user_list(self, driver):
         url = "http://console.galaxy142.com/gameManage/index/internal/customer/list"
@@ -151,19 +157,25 @@ class TestServiceRTC(object):
                 "forward_method": "POST",
                 "uid": driver["customer_id"],
                 "channel_id": driver["channel_id"],
-                "desc": "test",
                 "name": "test apk",
+                "desc": "test",
+
+                # 本地上传以及包名的数据
+                "upload_type": 1,
                 "download_url": upload_apk["download_url"],
                 "file_md5": upload_apk["filemd5"],
                 "package_name": upload_apk["package_name"],
-                "instance_type": 0,
-                "max_concurrent": 0,
-                "quality": "720p",
+                "version_code": upload_apk["version_code"],
+                "version_name": upload_apk["version_name"],
+
+                # 游戏类型与类别
                 "category_id": 1,
                 "type_ids": "17, 18",
-                "upload_type": 1,
-                "version_code": upload_apk["version_code"],
-                "version_name": upload_apk["version_name"]
+
+                # 最大并发数与实例数量
+                "max_concurrent": 0,
+                "instance_type": 0,
+                "quality": "720p",
             }
         }
         response = RequestHttp().request_response(method="post", url=add_url, data=add_data, headers=headers)
@@ -173,7 +185,8 @@ class TestServiceRTC(object):
         assert add_response_info["code"] == 0
         assert "result" in add_response_info
         gid = add_response_info["result"]["gid"]
-        print(gid)
+        # 删除一下添加的游戏
+        self.game_delete(driver, gid)
 
 
 if __name__ == '__main__':
