@@ -154,7 +154,7 @@ class TestServiceRTC(object):
                 "desc": "test",
                 "name": "test apk",
                 "download_url": upload_apk["download_url"],
-                "file_md5": upload_apk["filemd5"],
+                "filemd5": upload_apk["filemd5"],
                 "package_name": upload_apk["package_name"],
                 "instance_type": 0,
                 "max_concurrent": 0,
