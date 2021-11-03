@@ -32,11 +32,33 @@ class TestServiceRTC(object):
         re_console = "console:token=.+?(?=;)|uc:token=.+?(?=;)"
         driver["cookie"] = ";".join(re.findall(re_console, response.headers["set-cookie"]))
         driver["headers"] = {"Content-Type": "application/json", "Cookie": driver["cookie"]}
-
-        # 获取上传token. 这里没有校验，看接口也不在service_core里
-        get_token_url = "http://api-console.buffcloud.com/upload_token/get"
-        driver["upload_token"] = json.loads(requests.get(get_token_url).text)["data"]["token"]
         return driver
+
+    @pytest.fixture()
+    # 上传apk的时候，需要更新token信息
+    def upload_token(self, driver):
+        get_token_url = "http://api-console.buffcloud.com/upload_token/get"
+        token = json.loads(requests.get(get_token_url).text)["data"]["token"]
+        return token
+
+    @pytest.fixture()
+    def upload_apk(self, driver, upload_token):
+        # 先上传apk，获取apk信息
+        upload_url = "http://api-console.buffcloud.com/upload/apk"
+        # data里不需要有要上传的文件的字段
+        data = {"uid": driver["customer_id"], "chan_id": driver["channel_id"]}
+        # Headers中不需要填写Content-Type，上传后会自动填写的
+        headers = {"X-Requested-With": "XMLHttpRequest", "User-Token": upload_token}
+        # 这里的data不能用json格式
+        response = requests.post(upload_url, data=data, headers=headers, files={"file": open(apk_file, "rb")})
+        # service_core里不去校验返回信息，这个接口不是service_core返回的
+        # assert response.status_code == 200
+        # upload_response_info = json.loads(response.text)
+        # assert upload_response_info["code"] == 0
+        # assert "data" in upload_response_info
+        # assert "download_url" in upload_response_info["data"]
+        # assert "filemd5" in upload_response_info["data"]
+        return json.loads(response.text)["data"]
 
     # method: POST
     def test_user_list(self, driver):
@@ -120,22 +142,7 @@ class TestServiceRTC(object):
             assert result_info["uid"] == driver["customer_id"]
             assert result_info["channel_id"] == driver["channel_id"]
 
-    def test_add(self, driver):
-        # 先上传apk，获取apk信息
-        upload_url = "http://api-console.buffcloud.com/upload/apk"
-        # data里不需要有要上传的文件的字段
-        data = {"uid": driver["customer_id"], "chan_id": driver["channel_id"]}
-        # Headers中不需要填写Content-Type，上传后会自动填写的
-        headers = {"X-Requested-With": "XMLHttpRequest", "User-Token": driver["upload_token"]}
-        # 这里的data不能用json格式
-        response = requests.post(upload_url, data=data, headers=headers, files={"file": open(apk_file, "rb")})
-        assert response.status_code == 200
-        upload_response_info = json.loads(response.text)
-        assert upload_response_info["code"] == 0
-        assert "data" in upload_response_info
-        assert "download_url" in upload_response_info["data"]
-        assert "filemd5" in upload_response_info["data"]
-
+    def test_add(self, driver, upload_apk):
         # 本地添加
         add_url = "http://console.galaxy142.com/gameManage/index/internal/game/add"
         headers = driver["headers"]
@@ -146,17 +153,17 @@ class TestServiceRTC(object):
                 "channel_id": driver["channel_id"],
                 "desc": "test",
                 "name": "test apk",
-                "download_url": upload_response_info["data"]["download_url"],
-                "file_md5": upload_response_info["data"]["filemd5"],
-                "package_name": upload_response_info["data"]["package_name"],
+                "download_url": upload_apk["download_url"],
+                "file_md5": upload_apk["filemd5"],
+                "package_name": upload_apk["package_name"],
                 "instance_type": 0,
                 "max_concurrent": 0,
                 "quality": "720p",
                 "category_id": 1,
                 "type_ids": "17, 18",
                 "upload_type": 1,
-                "version_code": upload_response_info["data"]["version_code"],
-                "version_name": upload_response_info["data"]["version_name"]
+                "version_code": upload_apk["version_code"],
+                "version_name": upload_apk["version_name"]
             }
         }
         response = RequestHttp().request_response(method="post", url=add_url, data=add_data, headers=headers)
