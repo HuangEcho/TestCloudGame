@@ -163,7 +163,7 @@ class TestServiceRTC(object):
                 # 本地上传以及包名的数据
                 "upload_type": 1,
                 "download_url": upload_apk["download_url"],
-                "file_md5": upload_apk["filemd5"],
+                "filemd5": upload_apk["filemd5"],
                 "package_name": upload_apk["package_name"],
                 "version_code": upload_apk["version_code"],
                 "version_name": upload_apk["version_name"],
