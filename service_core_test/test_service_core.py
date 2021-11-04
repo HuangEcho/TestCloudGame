@@ -18,7 +18,7 @@ log = logging.getLogger("test_service_core")
 # 考虑使用钉钉apk的url吧，虽然150M，但是没有防盗链啊
 # 考虑测试环境中部署几个apk的地址，后续就用那个地址来测试
 apk_url = "https://download.alicdn.com/wireless/dingtalk/latest/rimet_10002068.apk"
-apk_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "zgxqazb_93758.apk")
+apk_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Chess_v2.8.1.apk")
 
 
 class TestServiceRTC(object):
@@ -62,7 +62,7 @@ class TestServiceRTC(object):
 
     def game_delete(self, driver, gid):
         game_delete_url = "http://console.galaxy142.com/gameManage/index/internal/game/delete"
-        data = {"params": {"gid": gid}}
+        data = {"params": {"forward_method": "POST", "gid": gid}}
         response = RequestHttp().request_response(method="post", url=game_delete_url, data=data, headers=driver["headers"])
         return response
 
@@ -94,6 +94,7 @@ class TestServiceRTC(object):
             if channel_info["name"] == "service_core测试使用":
                 driver["channel_id"] = channel_info["id"]
 
+    # 没有channel删除接口，这里只覆盖channel异常场景
     def test_channel_add(self, driver):
         url = "http://console.galaxy142.com/gameManage/index/internal/channel/add"
         headers = driver["headers"]
@@ -148,8 +149,8 @@ class TestServiceRTC(object):
             assert result_info["uid"] == driver["customer_id"]
             assert result_info["channel_id"] == driver["channel_id"]
 
-    def test_add(self, driver, upload_apk):
-        # 本地添加
+    def test_add_upload_type_local(self, driver, upload_apk):
+        # 本地添加, 先上传apk
         add_url = "http://console.galaxy142.com/gameManage/index/internal/game/add"
         headers = driver["headers"]
         add_data = {
@@ -179,7 +180,6 @@ class TestServiceRTC(object):
             }
         }
         response = RequestHttp().request_response(method="post", url=add_url, data=add_data, headers=headers)
-        print(response.status_code, response.text)
         assert response.status_code == 200
         add_response_info = json.loads(response.text)
         assert add_response_info["code"] == 0
@@ -187,6 +187,86 @@ class TestServiceRTC(object):
         gid = add_response_info["result"]["gid"]
         # 删除一下添加的游戏
         self.game_delete(driver, gid)
+
+    def test_add_upload_type_local_lost_apk_message(self, driver, upload_apk):
+        # 本地添加, 先上传apk
+        add_url = "http://console.galaxy142.com/gameManage/index/internal/game/add"
+        headers = driver["headers"]
+        data = {
+            "params": {
+                "forward_method": "POST",
+                "uid": driver["customer_id"],
+                "channel_id": driver["channel_id"],
+                "name": "test apk",
+                "desc": "test",
+
+                # 本地上传以及包名的数据
+                "upload_type": 1,
+                "download_url": upload_apk["download_url"],
+                "filemd5": upload_apk["filemd5"],
+                "package_name": upload_apk["package_name"],
+                "version_code": upload_apk["version_code"],
+                "version_name": upload_apk["version_name"],
+
+                # 游戏类型与类别
+                "category_id": 1,
+                "type_ids": "17, 18",
+
+                # 最大并发数与实例数量
+                "max_concurrent": 0,
+                "instance_type": 0,
+                "quality": "720p",
+            }
+        }
+        # 缺少download_url
+        lost_download_url_data = data
+        lost_download_url_data["params"].pop("download_url")
+        response = RequestHttp().request_response(method="post", url=add_url, data=lost_download_url_data, headers=headers)
+        assert response.status_code == 200
+        add_response_info = json.loads(response.text)
+        assert add_response_info["code"] == 1
+        assert "请选择上传游戏包apk文件" in add_response_info["error"]
+
+        # 缺少filemd5
+        lost_download_url_data = data
+        lost_download_url_data["params"].pop("filemd5")
+        response = RequestHttp().request_response(method="post", url=add_url, data=lost_download_url_data,
+                                                  headers=headers)
+        assert response.status_code == 200
+        add_response_info = json.loads(response.text)
+        assert add_response_info["code"] == 1
+        assert "请选择上传游戏包apk文件" in add_response_info["error"]
+
+        # 缺少package_name
+        lost_download_url_data = data
+        lost_download_url_data["params"].pop("package_name")
+        response = RequestHttp().request_response(method="post", url=add_url, data=lost_download_url_data,
+                                                  headers=headers)
+        assert response.status_code == 200
+        add_response_info = json.loads(response.text)
+        assert add_response_info["code"] == 1
+        assert "请选择上传游戏包apk文件" in add_response_info["error"]
+
+        # 缺少version_code
+        lost_download_url_data = data
+        lost_download_url_data["params"].pop("version_code")
+        response = RequestHttp().request_response(method="post", url=add_url, data=lost_download_url_data,
+                                                  headers=headers)
+        assert response.status_code == 200
+        add_response_info = json.loads(response.text)
+        assert add_response_info["code"] == 1
+        assert "请选择上传游戏包apk文件" in add_response_info["error"]
+
+        # 缺少version_name
+        lost_download_url_data = data
+        lost_download_url_data["params"].pop("version_name")
+        response = RequestHttp().request_response(method="post", url=add_url, data=lost_download_url_data,
+                                                  headers=headers)
+        assert response.status_code == 200
+        add_response_info = json.loads(response.text)
+        assert add_response_info["code"] == 1
+        assert "请选择上传游戏包apk文件" in add_response_info["error"]
+
 
 
 if __name__ == '__main__':
