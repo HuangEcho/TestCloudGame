@@ -28,7 +28,7 @@ class TestServiceRTC(object):
         # 设置默认的id值
         driver = {"customer_id": 1, "chan_id": "test_service_core", "channel_id": 39}
 
-        url = "http://{0}/login".format(service_core_domain)
+        url = "{0}/login".format(service_core_domain)
         response = requests.get(url)
         re_console = "console:token=.+?(?=;)|uc:token=.+?(?=;)"
         driver["cookie"] = ";".join(re.findall(re_console, response.headers["set-cookie"]))
