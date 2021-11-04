@@ -19,6 +19,7 @@ log = logging.getLogger("test_service_core")
 # 考虑测试环境中部署几个apk的地址，后续就用那个地址来测试
 apk_url = "https://download.alicdn.com/wireless/dingtalk/latest/rimet_10002068.apk"
 apk_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Chess_v2.8.1.apk")
+service_core_domain = "http://console.galaxy142.com"
 
 
 class TestServiceRTC(object):
@@ -27,7 +28,7 @@ class TestServiceRTC(object):
         # 设置默认的id值
         driver = {"customer_id": 1, "chan_id": "test_service_core", "channel_id": 39}
 
-        url = "http://console.galaxy142.com/login"
+        url = "http://{0}/login".format(service_core_domain)
         response = requests.get(url)
         re_console = "console:token=.+?(?=;)|uc:token=.+?(?=;)"
         driver["cookie"] = ";".join(re.findall(re_console, response.headers["set-cookie"]))
@@ -61,14 +62,14 @@ class TestServiceRTC(object):
         return json.loads(response.text)["data"]
 
     def game_delete(self, driver, gid):
-        game_delete_url = "http://console.galaxy142.com/gameManage/index/internal/game/delete"
+        game_delete_url = "{0}/gameManage/index/internal/game/delete".format(service_core_domain)
         data = {"params": {"forward_method": "POST", "gid": gid}}
         response = RequestHttp().request_response(method="post", url=game_delete_url, data=data, headers=driver["headers"])
         return response
 
     # method: POST
     def test_user_list(self, driver):
-        url = "http://console.galaxy142.com/gameManage/index/internal/customer/list"
+        url = "{0}/gameManage/index/internal/customer/list".format(service_core_domain)
         headers = driver["headers"]
         response = RequestHttp().request_response(method="post", url=url, headers=headers, data={})
         assert response.status_code == 200
@@ -81,7 +82,7 @@ class TestServiceRTC(object):
                 driver["customer_id"] = check_response["result"][0]["id"]
 
     def test_channel_list(self, driver):
-        url = "http://console.galaxy142.com/gameManage/index/internal/channel/list"
+        url = "{0}/gameManage/index/internal/channel/list".format(service_core_domain)
         headers = driver["headers"]
         data = {"params": {"uid": driver["customer_id"]}}
         response = RequestHttp().request_response(method="post", url=url, headers=headers, data=data)
@@ -96,7 +97,7 @@ class TestServiceRTC(object):
 
     # 没有channel删除接口，这里只覆盖channel异常场景
     def test_channel_add(self, driver):
-        url = "http://console.galaxy142.com/gameManage/index/internal/channel/add"
+        url = "{0}/gameManage/index/internal/channel/add".format(service_core_domain)
         headers = driver["headers"]
         data = {"params": {"forward_method": "POST", "uid": driver["customer_id"], "chan_id": "test_service_core",
                            "name": "chan_id duplicate"}}
@@ -107,7 +108,7 @@ class TestServiceRTC(object):
         assert "渠道ID重复" in check_response["error"]
 
     def test_channel_add_required_param_lost_uid(self, driver):
-        url = "http://console.galaxy142.com/gameManage/index/internal/channel/add"
+        url = "{0}/gameManage/index/internal/channel/add".format(service_core_domain)
         headers = driver["headers"]
         data = {"params": {"forward_method": "POST", "chan_id": "test_service_core", "name": "chan_id duplicate"}}
         response = RequestHttp().request_response(method="post", url=url, headers=headers, data=data)
@@ -117,7 +118,7 @@ class TestServiceRTC(object):
         assert "参数错误" in check_response["error"]
 
     def test_channel_add_required_param_lost_chan_id(self, driver):
-        url = "http://console.galaxy142.com/gameManage/index/internal/channel/add"
+        url = "{0}/gameManage/index/internal/channel/add".format(service_core_domain)
         headers = driver["headers"]
         data = {"params": {"forward_method": "POST", "uid": driver["customer_id"], "name": "chan_id duplicate"}}
         response = RequestHttp().request_response(method="post", url=url, headers=headers, data=data)
@@ -127,7 +128,7 @@ class TestServiceRTC(object):
         assert "参数错误" in check_response["error"]
 
     def test_channel_add_required_param_lost_name(self, driver):
-        url = "http://console.galaxy142.com/gameManage/index/internal/channel/add"
+        url = "{0}/gameManage/index/internal/channel/add".format(service_core_domain)
         headers = driver["headers"]
         data = {"params": {"forward_method": "POST", "uid": driver["customer_id"], "chan_id": "test_service_core"}}
         response = RequestHttp().request_response(method="post", url=url, headers=headers, data=data)
@@ -137,7 +138,7 @@ class TestServiceRTC(object):
         assert "参数错误" in check_response["error"]
 
     def test_game_list(self, driver):
-        url = "http://console.galaxy142.com/gameManage/index/internal/game/list"
+        url = "{0}/gameManage/index/internal/game/list".format(service_core_domain)
         headers = driver["headers"]
         data = {"params": {"forward_method": "GET", "uid": driver["customer_id"], "channel_id": driver["channel_id"]}}
         response = RequestHttp().request_response(method="post", url=url, headers=headers, data=data)
@@ -151,7 +152,7 @@ class TestServiceRTC(object):
 
     def test_add_upload_type_local(self, driver, upload_apk):
         # 本地添加, 先上传apk
-        add_url = "http://console.galaxy142.com/gameManage/index/internal/game/add"
+        add_url = "{0}/gameManage/index/internal/game/add".format(service_core_domain)
         headers = driver["headers"]
         add_data = {
             "params": {
@@ -190,7 +191,7 @@ class TestServiceRTC(object):
 
     def test_add_upload_type_local_lost_apk_message(self, driver, upload_apk):
         # 本地添加, 先上传apk
-        add_url = "http://console.galaxy142.com/gameManage/index/internal/game/add"
+        add_url = "{0}/gameManage/index/internal/game/add".format(service_core_domain)
         headers = driver["headers"]
         data = {
             "params": {
