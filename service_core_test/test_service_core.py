@@ -7,6 +7,7 @@ import json
 import random
 import re
 import os
+import copy
 import logging
 from dependent.env_self import Env
 from dependent.requests_http import RequestHttp
@@ -189,8 +190,7 @@ class TestServiceRTC(object):
         # 删除一下添加的游戏
         self.game_delete(driver, gid)
 
-    def test_add_upload_type_local_lost_apk_message(self, driver, upload_apk):
-        # 本地添加, 先上传apk
+    def test_add_lost_params(self, driver, upload_apk):
         add_url = "{0}/gameManage/index/internal/game/add".format(service_core_domain)
         headers = driver["headers"]
         data = {
@@ -199,6 +199,7 @@ class TestServiceRTC(object):
                 "uid": driver["customer_id"],
                 "channel_id": driver["channel_id"],
                 "name": "test apk",
+                # desc 不是必填项，不校验
                 "desc": "test",
 
                 # 本地上传以及包名的数据
@@ -214,22 +215,62 @@ class TestServiceRTC(object):
                 "type_ids": "17, 18",
 
                 # 最大并发数与实例数量
-                "max_concurrent": 0,
                 "instance_type": 0,
+                "max_concurrent": 0,
                 "quality": "720p",
             }
         }
-        # 缺少download_url
-        lost_download_url_data = data
-        lost_download_url_data["params"].pop("download_url")
+        # lost uid
+        lost_download_url_data = copy.deepcopy(data)
+        lost_download_url_data["params"].pop("uid")
         response = RequestHttp().request_response(method="post", url=add_url, data=lost_download_url_data, headers=headers)
+        assert response.status_code == 200
+        add_response_info = json.loads(response.text)
+        assert add_response_info["code"] == 1
+        assert "uid不能为空" in add_response_info["error"]
+
+        # lost channel_id
+        lost_download_url_data = copy.deepcopy(data)
+        lost_download_url_data["params"].pop("channel_id")
+        response = RequestHttp().request_response(method="post", url=add_url, data=lost_download_url_data,
+                                                  headers=headers)
+        assert response.status_code == 200
+        add_response_info = json.loads(response.text)
+        assert add_response_info["code"] == 1
+        assert "渠道id不能为空" in add_response_info["error"]
+
+        # lost name
+        lost_download_url_data = copy.deepcopy(data)
+        lost_download_url_data["params"].pop("name")
+        response = RequestHttp().request_response(method="post", url=add_url, data=lost_download_url_data,
+                                                  headers=headers)
+        assert response.status_code == 200
+        add_response_info = json.loads(response.text)
+        assert add_response_info["code"] == 1
+        assert "请输入游戏名称" in add_response_info["error"]
+
+        # lost upload_type
+        lost_download_url_data = copy.deepcopy(data)
+        lost_download_url_data["params"].pop("upload_type")
+        response = RequestHttp().request_response(method="post", url=add_url, data=lost_download_url_data,
+                                                  headers=headers)
+        assert response.status_code == 200
+        add_response_info = json.loads(response.text)
+        assert add_response_info["code"] == 1
+        assert "请选择上传游戏包方式" in add_response_info["error"]
+
+        # lost download_url
+        lost_download_url_data = copy.deepcopy(data)
+        lost_download_url_data["params"].pop("download_url")
+        response = RequestHttp().request_response(method="post", url=add_url, data=lost_download_url_data,
+                                                  headers=headers)
         assert response.status_code == 200
         add_response_info = json.loads(response.text)
         assert add_response_info["code"] == 1
         assert "请选择上传游戏包apk文件" in add_response_info["error"]
 
-        # 缺少filemd5
-        lost_download_url_data = data
+        # lost filemd5
+        lost_download_url_data = copy.deepcopy(data)
         lost_download_url_data["params"].pop("filemd5")
         response = RequestHttp().request_response(method="post", url=add_url, data=lost_download_url_data,
                                                   headers=headers)
@@ -238,8 +279,8 @@ class TestServiceRTC(object):
         assert add_response_info["code"] == 1
         assert "请选择上传游戏包apk文件" in add_response_info["error"]
 
-        # 缺少package_name
-        lost_download_url_data = data
+        # lost package_name
+        lost_download_url_data = copy.deepcopy(data)
         lost_download_url_data["params"].pop("package_name")
         response = RequestHttp().request_response(method="post", url=add_url, data=lost_download_url_data,
                                                   headers=headers)
@@ -248,8 +289,8 @@ class TestServiceRTC(object):
         assert add_response_info["code"] == 1
         assert "请选择上传游戏包apk文件" in add_response_info["error"]
 
-        # 缺少version_code
-        lost_download_url_data = data
+        # lost version_code
+        lost_download_url_data = copy.deepcopy(data)
         lost_download_url_data["params"].pop("version_code")
         response = RequestHttp().request_response(method="post", url=add_url, data=lost_download_url_data,
                                                   headers=headers)
@@ -258,8 +299,8 @@ class TestServiceRTC(object):
         assert add_response_info["code"] == 1
         assert "请选择上传游戏包apk文件" in add_response_info["error"]
 
-        # 缺少version_name
-        lost_download_url_data = data
+        # lost version_name
+        lost_download_url_data = copy.deepcopy(data)
         lost_download_url_data["params"].pop("version_name")
         response = RequestHttp().request_response(method="post", url=add_url, data=lost_download_url_data,
                                                   headers=headers)
@@ -268,6 +309,56 @@ class TestServiceRTC(object):
         assert add_response_info["code"] == 1
         assert "请选择上传游戏包apk文件" in add_response_info["error"]
 
+        # lost category_id
+        lost_download_url_data = copy.deepcopy(data)
+        lost_download_url_data["params"].pop("category_id")
+        response = RequestHttp().request_response(method="post", url=add_url, data=lost_download_url_data,
+                                                  headers=headers)
+        assert response.status_code == 200
+        add_response_info = json.loads(response.text)
+        assert add_response_info["code"] == 1
+        assert "请选择游戏类别" in add_response_info["error"]
+
+        # lost type_ids
+        lost_download_url_data = copy.deepcopy(data)
+        lost_download_url_data["params"].pop("type_ids")
+        response = RequestHttp().request_response(method="post", url=add_url, data=lost_download_url_data,
+                                                  headers=headers)
+        assert response.status_code == 200
+        add_response_info = json.loads(response.text)
+        assert add_response_info["code"] == 1
+        assert "请选择游戏类型" in add_response_info["error"]
+
+        # 目前用的ShouldBindJson对于0值也是判断为空，还没有增加对应的判断。但是从逻辑上来看，应该是要判断是否存在的
+        # # lost instance_type
+        # lost_download_url_data = copy.deepcopy(data)
+        # lost_download_url_data["params"].pop("instance_type")
+        # response = RequestHttp().request_response(method="post", url=add_url, data=lost_download_url_data,
+        #                                           headers=headers)
+        # assert response.status_code == 200
+        # add_response_info = json.loads(response.text)
+        # assert add_response_info["code"] == 1
+        # # assert "system error" in add_response_info["error"]
+        #
+        # # lost max_concurrent
+        # lost_download_url_data = copy.deepcopy(data)
+        # lost_download_url_data["params"].pop("max_concurrent")
+        # response = RequestHttp().request_response(method="post", url=add_url, data=lost_download_url_data,
+        #                                           headers=headers)
+        # assert response.status_code == 200
+        # add_response_info = json.loads(response.text)
+        # assert add_response_info["code"] == 1
+        # # assert "system error" in add_response_info["error"]
+
+        # lost quality
+        lost_download_url_data = copy.deepcopy(data)
+        lost_download_url_data["params"].pop("quality")
+        response = RequestHttp().request_response(method="post", url=add_url, data=lost_download_url_data,
+                                                  headers=headers)
+        assert response.status_code == 200
+        add_response_info = json.loads(response.text)
+        assert add_response_info["code"] == 1
+        assert "请选择播流画质" in add_response_info["error"]
 
 
 if __name__ == '__main__':
