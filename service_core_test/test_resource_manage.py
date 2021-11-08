@@ -16,10 +16,10 @@ logger = logging.getLogger(__name__)
 # 增加一些ip地址
 # 测试域名console.galaxy142.com host绑定192.168.126.142再验证
 
-# 考虑使用钉钉apk的url吧，虽然150M，但是没有防盗链啊
-# 考虑测试环境中部署几个apk的地址，后续就用那个地址来测试
+# 考虑使用钉钉apk的url吧，虽然150M，但是没有防盗链啊，md5会变化呢
 apk_url = "https://download.alicdn.com/wireless/dingtalk/latest/rimet_10002068.apk"
-apk_md5 = "588b2321f7af413ffe6b15a68030bac8"
+# apk_md5 = "588b2321f7af413ffe6b15a68030bac8"
+apk_md5 = "b574011ba11e52e77ff169a77e183463"
 apk_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Chess_v2.8.1.apk")
 # service_core_domain = "http://console.galaxy142.com"
 service_core_domain = "http://console.galaxy195.com"
@@ -74,11 +74,19 @@ class TestServiceRTC(object):
         response = RequestHttp().request_response(method="post", url=game_delete_url, data=data, headers=driver["headers"])
         return response
 
+    def channel_list(self, driver, uid):
+        url = "{0}/gameManage/index/internal/channel/list".format(service_core_domain)
+        headers = driver["headers"]
+        data = {"params": {"forward_method": "GET", "uid": uid}}
+        response = RequestHttp().request_response(method="post", url=url, headers=headers, data=data)
+        return response
+
     # method: POST
-    def test_user_list(self, driver):
+    def test_customer_list(self, driver):
         url = "{0}/gameManage/index/internal/customer/list".format(service_core_domain)
         headers = driver["headers"]
-        response = RequestHttp().request_response(method="post", url=url, headers=headers, data={})
+        data = {"params": {"forward_method": "GET"}}
+        response = RequestHttp().request_response(method="post", url=url, headers=headers, data=data)
         assert response.status_code == 200
         check_response = json.loads(response.text)
         assert check_response["code"] == 0
@@ -86,13 +94,22 @@ class TestServiceRTC(object):
         assert "id" in check_response["result"][0]
         for customer_info in check_response["result"]:
             if customer_info["name"] == "网心科技":
-                driver["customer_id"] = check_response["result"][0]["id"]
+                driver["customer_id"] = customer_info["id"]
+
+    def test_user_info_list(self, driver):
+        url = "{0}/gameManage/index/internal/user/info_list".format(service_core_domain)
+        headers = driver["headers"]
+        data = {"params": {"forward_method": "GET"}}
+        response = RequestHttp().request_response(method="post", url=url, headers=headers, data=data)
+        assert response.status_code == 200
+        check_response = json.loads(response.text)
+        assert check_response["code"] == 0
+        assert "result" in check_response
+        assert "id" in check_response["result"][0]
+        assert "name" in check_response["result"][0]
 
     def test_channel_list(self, driver):
-        url = "{0}/gameManage/index/internal/channel/list".format(service_core_domain)
-        headers = driver["headers"]
-        data = {"params": {"uid": driver["customer_id"]}}
-        response = RequestHttp().request_response(method="post", url=url, headers=headers, data=data)
+        response = self.channel_list(driver, driver["customer_id"])
         assert response.status_code == 200
         check_response = json.loads(response.text)
         assert check_response["code"] == 0
@@ -101,6 +118,17 @@ class TestServiceRTC(object):
             assert channel_info["uid"] == driver["customer_id"]
             if channel_info["name"] == "auto_test":
                 driver["channel_id"] = channel_info["id"]
+
+    # # 目前没有判断必须传入uid，需要与研发确认是否要有这个逻辑在
+    # def test_channel_list_no_uid(self, driver):
+    #     url = "{0}/gameManage/index/internal/channel/list".format(service_core_domain)
+    #     headers = driver["headers"]
+    #     data = {"params": {"forward_method": "GET"}}
+    #     response = RequestHttp().request_response(method="post", url=url, headers=headers, data=data)
+    #     assert response.status_code == 200
+    #     check_response = json.loads(response.text)
+    #     assert check_response["code"] == 1
+    #     # assert "error" in check_response
 
     # 没有channel删除接口，这里只覆盖channel异常场景
     def test_channel_add(self, driver):
@@ -144,6 +172,140 @@ class TestServiceRTC(object):
         assert check_response["code"] == 1
         assert "参数错误" in check_response["error"]
 
+    def test_channel_update_modify_name(self, driver):
+        cid = 0
+        channel_list = json.loads(self.channel_list(driver, driver["customer_id"]).text)["result"]
+        for channel in channel_list:
+            if channel["chan_id"] == "auto_test":
+                cid = channel["id"]
+        url = "{0}/gameManage/index/internal/channel/update".format(service_core_domain)
+        headers = driver["headers"]
+        data = {"params": {"forward_method": "POST", "cid": cid, "name": "auto_test_1"}}
+        response = RequestHttp().request_response(method="post", url=url, headers=headers, data=data)
+        assert response.status_code == 200
+        check_response = json.loads(response.text)
+        assert check_response["code"] == 0
+        assert "ok" in check_response["result"]["message"].lower()
+
+        # 把name改回测试配置
+        data = {"params": {"forward_method": "POST", "cid": cid, "name": "auto_test"}}
+        RequestHttp().request_response(method="post", url=url, headers=headers, data=data)
+
+    def test_channel_update_lost_params(self, driver):
+        cid = 0
+        channel_list = json.loads(self.channel_list(driver, driver["customer_id"]).text)["result"]
+        for channel in channel_list:
+            if channel["chan_id"] == "auto_test":
+                cid = channel["id"]
+        url = "{0}/gameManage/index/internal/channel/update".format(service_core_domain)
+        headers = driver["headers"]
+        data = {"params": {"forward_method": "POST", "cid": cid, "name": "auto_test"}}
+        # lost cid
+        update_data = copy.deepcopy(data)
+        update_data["params"].pop("cid")
+        response = RequestHttp().request_response(method="post", url=url, headers=headers, data=update_data)
+        assert response.status_code == 200
+        check_response = json.loads(response.text)
+        assert check_response["code"] == 1
+        assert "参数错误" in check_response["error"]
+
+        # lost name
+        update_data = copy.deepcopy(data)
+        update_data["params"].pop("name")
+        response = RequestHttp().request_response(method="post", url=url, headers=headers, data=update_data)
+        assert response.status_code == 200
+        check_response = json.loads(response.text)
+        assert check_response["code"] == 1
+        assert "参数错误" in check_response["error"]
+
+    def test_channel_update_cid_not_exist(self, driver):
+        cid = 0
+        channel_list = json.loads(self.channel_list(driver, driver["customer_id"]).text)["result"]
+        for channel in channel_list:
+            if channel["chan_id"] == "auto_test":
+                cid = channel["id"] + 999
+        url = "{0}/gameManage/index/internal/channel/update".format(service_core_domain)
+        headers = driver["headers"]
+        data = {"params": {"forward_method": "POST", "cid": cid, "name": "auto_test"}}
+        response = RequestHttp().request_response(method="post", url=url, headers=headers, data=data)
+        assert response.status_code == 200
+        check_response = json.loads(response.text)
+        assert check_response["code"] == 1
+        assert "渠道不存在" in check_response["error"]
+
+    def test_channel_update_cid_is_zero(self, driver):
+        url = "{0}/gameManage/index/internal/channel/update".format(service_core_domain)
+        headers = driver["headers"]
+        data = {"params": {"forward_method": "POST", "cid": 0, "name": "auto_test"}}
+        response = RequestHttp().request_response(method="post", url=url, headers=headers, data=data)
+        assert response.status_code == 200
+        check_response = json.loads(response.text)
+        assert check_response["code"] == 1
+        assert "参数错误" in check_response["error"]
+
+    def test_channel_update_name_null(self, driver):
+        cid = 0
+        channel_list = json.loads(self.channel_list(driver, driver["customer_id"]).text)["result"]
+        for channel in channel_list:
+            if channel["chan_id"] == "auto_test":
+                cid = channel["id"]
+        url = "{0}/gameManage/index/internal/channel/update".format(service_core_domain)
+        headers = driver["headers"]
+        data = {"params": {"forward_method": "POST", "cid": cid, "name": ""}}
+        response = RequestHttp().request_response(method="post", url=url, headers=headers, data=data)
+        assert response.status_code == 200
+        check_response = json.loads(response.text)
+        assert check_response["code"] == 1
+        assert "参数错误" in check_response["error"]
+
+    def test_channel_detail(self, driver):
+        cid = 0
+        channel_list = json.loads(self.channel_list(driver, driver["customer_id"]).text)["result"]
+        for channel in channel_list:
+            if channel["chan_id"] == "auto_test":
+                cid = channel["id"]
+        url = "{0}/gameManage/index/internal/channel/detail".format(service_core_domain)
+        headers = driver["headers"]
+        data = {"params": {"forward_method": "GET", "cid": cid}}
+        response = RequestHttp().request_response(method="post", url=url, headers=headers, data=data)
+        assert response.status_code == 200
+        check_response = json.loads(response.text)
+        assert check_response["code"] == 0
+        assert "auto_test" in check_response["result"]["chan_id"]
+
+    # # 没有校验一定要有cid不为0，返回渠道不存在
+    # def test_channel_detail_cid_is_zero(self, driver):
+    #     cid = 0
+    #     url = "{0}/gameManage/index/internal/channel/detail".format(service_core_domain)
+    #     headers = driver["headers"]
+    #     data = {"params": {"forward_method": "GET", "cid": cid}}
+    #     response = RequestHttp().request_response(method="post", url=url, headers=headers, data=data)
+    #     assert response.status_code == 200
+    #     check_response = json.loads(response.text)
+    #     assert check_response["code"] == 1
+    #     assert "参数错误" in check_response["error"]
+
+    def test_channel_detail_cid_not_exist(self, driver):
+        url = "{0}/gameManage/index/internal/channel/detail".format(service_core_domain)
+        headers = driver["headers"]
+        data = {"params": {"forward_method": "GET", "cid": 999}}
+        response = RequestHttp().request_response(method="post", url=url, headers=headers, data=data)
+        assert response.status_code == 200
+        check_response = json.loads(response.text)
+        assert check_response["code"] == 1
+        assert "渠道数据不存在" in check_response["error"]
+
+    # # 竟然允许cid不存在？返回了channel_id为1的数据
+    # def test_channel_detail_lost_param(self, driver):
+    #     url = "{0}/gameManage/index/internal/channel/detail".format(service_core_domain)
+    #     headers = driver["headers"]
+    #     data = {"params": {"forward_method": "GET"}}
+    #     response = RequestHttp().request_response(method="post", url=url, headers=headers, data=data)
+    #     assert response.status_code == 200
+    #     check_response = json.loads(response.text)
+    #     assert check_response["code"] == 1
+    #     assert "参数错误" in check_response["error"]
+
     def test_game_list(self, driver):
         url = "{0}/gameManage/index/internal/game/list".format(service_core_domain)
         headers = driver["headers"]
@@ -157,46 +319,7 @@ class TestServiceRTC(object):
             assert result_info["uid"] == driver["customer_id"]
             assert result_info["channel_id"] == driver["channel_id"]
 
-    def test_add_upload_type_local(self, driver, upload_apk):
-        # 本地添加, 先上传apk
-        add_url = "{0}/gameManage/index/internal/game/add".format(service_core_domain)
-        headers = driver["headers"]
-        add_data = {
-            "params": {
-                "forward_method": "POST",
-                "uid": driver["customer_id"],
-                "channel_id": driver["channel_id"],
-                "name": "test apk",
-                "desc": "test",
-
-                # 本地上传以及包名的数据
-                "upload_type": 1,
-                "download_url": upload_apk["download_url"],
-                "filemd5": upload_apk["filemd5"],
-                "package_name": upload_apk["package_name"],
-                "version_code": upload_apk["version_code"],
-                "version_name": upload_apk["version_name"],
-
-                # 游戏类型与类别
-                "category_id": 1,
-                "type_ids": "17, 18",
-
-                # 最大并发数与实例数量
-                "max_concurrent": 0,
-                "instance_type": 0,
-                "quality": "720p",
-            }
-        }
-        response = RequestHttp().request_response(method="post", url=add_url, data=add_data, headers=headers)
-        assert response.status_code == 200
-        add_response_info = json.loads(response.text)
-        assert add_response_info["code"] == 0
-        assert "result" in add_response_info
-        gid = add_response_info["result"]["gid"]
-        # 删除一下添加的游戏
-        self.game_delete(driver, gid)
-
-    def test_add_lost_params(self, driver, upload_apk):
+    def test_game_add_lost_params(self, driver, upload_apk):
         add_url = "{0}/gameManage/index/internal/game/add".format(service_core_domain)
         headers = driver["headers"]
         data = {
@@ -316,7 +439,45 @@ class TestServiceRTC(object):
         assert add_response_info["code"] == 1
         assert "请选择播流画质" in add_response_info["error"]
 
-    def test_add_upload_type_local_lost_param(self, driver, upload_apk):
+    def test_game_add_upload_type_local(self, driver, upload_apk):
+        add_url = "{0}/gameManage/index/internal/game/add".format(service_core_domain)
+        headers = driver["headers"]
+        add_data = {
+            "params": {
+                "forward_method": "POST",
+                "uid": driver["customer_id"],
+                "channel_id": driver["channel_id"],
+                "name": "test apk",
+                "desc": "test",
+
+                # 本地上传以及包名的数据
+                "upload_type": 1,
+                "download_url": upload_apk["download_url"],
+                "filemd5": upload_apk["filemd5"],
+                "package_name": upload_apk["package_name"],
+                "version_code": upload_apk["version_code"],
+                "version_name": upload_apk["version_name"],
+
+                # 游戏类型与类别
+                "category_id": 1,
+                "type_ids": "17, 18",
+
+                # 最大并发数与实例数量
+                "max_concurrent": 0,
+                "instance_type": 0,
+                "quality": "720p",
+            }
+        }
+        response = RequestHttp().request_response(method="post", url=add_url, data=add_data, headers=headers)
+        assert response.status_code == 200
+        add_response_info = json.loads(response.text)
+        assert add_response_info["code"] == 0
+        assert "result" in add_response_info
+        gid = add_response_info["result"]["gid"]
+        # 删除一下添加的游戏
+        self.game_delete(driver, gid)
+
+    def test_game_add_upload_type_local_lost_param(self, driver, upload_apk):
         # 本地添加, 先上传apk
         add_url = "{0}/gameManage/index/internal/game/add".format(service_core_domain)
         headers = driver["headers"]
@@ -396,80 +557,7 @@ class TestServiceRTC(object):
         assert add_response_info["code"] == 1
         assert "请选择上传游戏包apk文件" in add_response_info["error"]
 
-    # def test_add_uid_not_match_channel_id(self, driver, upload_apk):
-    #     add_url = "{0}/gameManage/index/internal/game/add".format(service_core_domain)
-    #     headers = driver["headers"]
-    #     data = {
-    #         "params": {
-    #             "forward_method": "POST",
-    #             "uid": driver["customer_id"] + 99,
-    #             "channel_id": driver["channel_id"],
-    #             "name": "test apk",
-    #             "desc": "test",
-    #
-    #             # 本地上传以及包名的数据
-    #             "upload_type": 1,
-    #             "download_url": upload_apk["download_url"],
-    #             "filemd5": upload_apk["filemd5"],
-    #             "package_name": upload_apk["package_name"],
-    #             "version_code": upload_apk["version_code"],
-    #             "version_name": upload_apk["version_name"],
-    #
-    #             # 游戏类型与类别
-    #             "category_id": 1,
-    #             "type_ids": "17, 18",
-    #
-    #             # 最大并发数与实例数量
-    #             "instance_type": 0,
-    #             "max_concurrent": 0,
-    #             "quality": "720p",
-    #         }
-    #     }
-    #     response = RequestHttp().request_response(method="post", url=add_url, data=data,
-    #                                               headers=headers)
-    #     assert response.status_code == 200
-    #     add_response_info = json.loads(response.text)
-    #     assert add_response_info["code"] == 1
-    #     # 这里判断了system error ? 是数据库不允许插入么？
-    #     # assert "uid不能为空" in add_response_info["error"]
-
-    def test_add_upload_type_url(self, driver):
-        add_url = "{0}/gameManage/index/internal/game/add".format(service_core_domain)
-        headers = driver["headers"]
-        add_data = {
-            "params": {
-                "forward_method": "POST",
-                "uid": driver["customer_id"],
-                "channel_id": driver["channel_id"],
-                "name": "test apk",
-                "desc": "test",
-
-                # 网络上传
-                "upload_type": 2,
-                "upload_url": apk_url,
-                "md5": apk_md5,
-
-                # 游戏类型与类别
-                "category_id": 1,
-                "type_ids": "17, 18",
-
-                # 最大并发数与实例数量
-                "max_concurrent": 0,
-                "instance_type": 0,
-                "quality": "720p",
-            }
-        }
-
-        response = RequestHttp().request_response(method="post", url=add_url, data=add_data, headers=headers)
-        assert response.status_code == 200
-        add_response_info = json.loads(response.text)
-        assert add_response_info["code"] == 0
-        assert "result" in add_response_info
-        gid = add_response_info["result"]["gid"]
-        # 删除一下添加的游戏
-        self.game_delete(driver, gid)
-
-    def test_add_upload_type_url_lost_info(self, driver):
+    def test_game_add_upload_type_url_lost_info(self, driver):
         add_url = "{0}/gameManage/index/internal/game/add".format(service_core_domain)
         headers = driver["headers"]
         data = {
@@ -513,6 +601,111 @@ class TestServiceRTC(object):
         add_response_info = json.loads(response.text)
         assert add_response_info["code"] == 1
         assert "请输入上传游戏包md5值" in add_response_info["error"]
+
+    def test_game_add_upload_type_url(self, driver):
+        add_url = "{0}/gameManage/index/internal/game/add".format(service_core_domain)
+        headers = driver["headers"]
+        add_data = {
+            "params": {
+                "forward_method": "POST",
+                "uid": driver["customer_id"],
+                "channel_id": driver["channel_id"],
+                "name": "test apk",
+                "desc": "test",
+
+                # 网络上传
+                "upload_type": 2,
+                "upload_url": apk_url,
+                "md5": apk_md5,
+
+                # 游戏类型与类别
+                "category_id": 1,
+                "type_ids": "17, 18",
+
+                # 最大并发数与实例数量
+                "max_concurrent": 0,
+                "instance_type": 0,
+                "quality": "720p",
+            }
+        }
+
+        response = RequestHttp().request_response(method="post", url=add_url, data=add_data, headers=headers)
+        assert response.status_code == 200
+        add_response_info = json.loads(response.text)
+        assert add_response_info["code"] == 0
+        assert "result" in add_response_info
+        gid = add_response_info["result"]["gid"]
+        # 删除一下添加的游戏
+        self.game_delete(driver, gid)
+
+    def test_game_add_channel_not_exist(self, driver):
+        add_url = "{0}/gameManage/index/internal/game/add".format(service_core_domain)
+        headers = driver["headers"]
+        data = {
+            "params": {
+                "forward_method": "POST",
+                "uid": driver["customer_id"],
+                # channel not exist
+                "channel_id": 999,
+                "name": "test apk",
+                "desc": "test",
+
+                # 网络上传
+                "upload_type": 2,
+                "upload_url": apk_url,
+                "md5": apk_md5,
+
+                # 游戏类型与类别
+                "category_id": 1,
+                "type_ids": "17, 18",
+
+                # 最大并发数与实例数量
+                "instance_type": 0,
+                "max_concurrent": 0,
+                "quality": "720p",
+            }
+        }
+        response = RequestHttp().request_response(method="post", url=add_url, data=data,
+                                                  headers=headers)
+        assert response.status_code == 200
+        add_response_info = json.loads(response.text)
+        assert add_response_info["code"] == 1
+        assert "渠道信息不存在" in add_response_info["error"]
+
+    # # 目前没有判断uid是否存在
+    # def test_game_add_uid_not_exist(self, driver):
+    #     add_url = "{0}/gameManage/index/internal/game/add".format(service_core_domain)
+    #     headers = driver["headers"]
+    #     data = {
+    #         "params": {
+    #             "forward_method": "POST",
+    #             # uid not exist
+    #             "uid": 999,
+    #             "channel_id": driver["channel_id"],
+    #             "name": "test apk",
+    #             "desc": "test",
+    #
+    #             # 网络上传
+    #             "upload_type": 2,
+    #             "upload_url": apk_url,
+    #             "md5": apk_md5,
+    #
+    #             # 游戏类型与类别
+    #             "category_id": 1,
+    #             "type_ids": "17, 18",
+    #
+    #             # 最大并发数与实例数量
+    #             "instance_type": 0,
+    #             "max_concurrent": 0,
+    #             "quality": "720p",
+    #         }
+    #     }
+    #     response = RequestHttp().request_response(method="post", url=add_url, data=data,
+    #                                               headers=headers)
+    #     assert response.status_code == 200
+    #     add_response_info = json.loads(response.text)
+    #     assert add_response_info["code"] == 1
+    #     assert "uid信息不存在" in add_response_info["error"]
 
 
 if __name__ == '__main__':
