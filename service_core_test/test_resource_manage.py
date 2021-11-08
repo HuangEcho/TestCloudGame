@@ -119,6 +119,22 @@ class TestServiceRTC(object):
             if channel_info["name"] == "auto_test":
                 driver["channel_id"] = channel_info["id"]
 
+    # # 目前code会为0，result里为空
+    # def test_channel_list_channel_id_not_exist(self, driver):
+    #     response = self.channel_list(driver, 999)
+    #     assert response.status_code == 200
+    #     check_response = json.loads(response.text)
+    #     assert check_response["code"] == 1
+    #     assert "渠道不存在" in check_response["error"]
+
+    # # 目前没有校验
+    # def test_channel_list_channel_id_is_zero(self, driver):
+    #     response = self.channel_list(driver, 0)
+    #     assert response.status_code == 200
+    #     check_response = json.loads(response.text)
+    #     assert check_response["code"] == 1
+    #     assert "参数错误" in check_response["error"]
+
     # # 目前没有判断必须传入uid，需要与研发确认是否要有这个逻辑在
     # def test_channel_list_no_uid(self, driver):
     #     url = "{0}/gameManage/index/internal/channel/list".format(service_core_domain)
@@ -318,6 +334,73 @@ class TestServiceRTC(object):
         for result_info in check_response["result"]:
             assert result_info["uid"] == driver["customer_id"]
             assert result_info["channel_id"] == driver["channel_id"]
+
+    # # 目前没有校验
+    # def test_game_list_uid_is_zero(self, driver):
+    #     url = "{0}/gameManage/index/internal/game/list".format(service_core_domain)
+    #     headers = driver["headers"]
+    #     data = {"params": {"forward_method": "GET", "uid": 0, "channel_id": driver["channel_id"]}}
+    #     response = RequestHttp().request_response(method="post", url=url, headers=headers, data=data)
+    #     assert response.status_code == 200
+    #     check_response = json.loads(response.text)
+    #     assert check_response["code"] == 1
+    #     assert "参数错误" in check_response["error"]
+
+    # # 目前没有校验
+    # def test_game_list_uid_not_exist(self, driver):
+    #     url = "{0}/gameManage/index/internal/game/list".format(service_core_domain)
+    #     headers = driver["headers"]
+    #     data = {"params": {"forward_method": "GET", "uid": 999, "channel_id": driver["channel_id"]}}
+    #     response = RequestHttp().request_response(method="post", url=url, headers=headers, data=data)
+    #     assert response.status_code == 200
+    #     check_response = json.loads(response.text)
+    #     assert check_response["code"] == 1
+    #     assert "参数错误" in check_response["error"]
+
+    # # 目前没有校验
+    # def test_game_list_channel_is_zaro(self, driver):
+    #     url = "{0}/gameManage/index/internal/game/list".format(service_core_domain)
+    #     headers = driver["headers"]
+    #     data = {"params": {"forward_method": "GET", "uid": driver["customer_id"], "channel_id": 0}}
+    #     response = RequestHttp().request_response(method="post", url=url, headers=headers, data=data)
+    #     assert response.status_code == 200
+    #     check_response = json.loads(response.text)
+    #     assert check_response["code"] == 1
+    #     assert "参数错误" in check_response["error"]
+
+    # # 目前没有校验
+    # def test_game_list_channel_not_exist(self, driver):
+    #     url = "{0}/gameManage/index/internal/game/list".format(service_core_domain)
+    #     headers = driver["headers"]
+    #     data = {"params": {"forward_method": "GET", "uid": driver["customer_id"], "channel_id": driver["channel_id"]}}
+    #     game_data = copy.deepcopy(data)
+    #
+    #     # lost uid
+    #     game_data["params"].pop("uid")
+    #     response = RequestHttp().request_response(method="post", url=url, headers=headers, data=data)
+    #     assert response.status_code == 200
+    #     check_response = json.loads(response.text)
+    #     assert check_response["code"] == 1
+    #     assert "参数错误" in check_response["error"]
+    #
+    #     # lost channel_id
+    #     game_data["params"].pop("channel_id")
+    #     response = RequestHttp().request_response(method="post", url=url, headers=headers, data=data)
+    #     assert response.status_code == 200
+    #     check_response = json.loads(response.text)
+    #     assert check_response["code"] == 1
+    #     assert "参数错误" in check_response["error"]
+
+    # 目前没有校验
+    def test_game_list_lost_params(self, driver):
+        url = "{0}/gameManage/index/internal/game/list".format(service_core_domain)
+        headers = driver["headers"]
+        data = {"params": {"forward_method": "GET", "uid": driver["customer_id"], "channel_id": 999}}
+        response = RequestHttp().request_response(method="post", url=url, headers=headers, data=data)
+        assert response.status_code == 200
+        check_response = json.loads(response.text)
+        assert check_response["code"] == 1
+        assert "参数错误" in check_response["error"]
 
     def test_game_add_lost_params(self, driver, upload_apk):
         add_url = "{0}/gameManage/index/internal/game/add".format(service_core_domain)
