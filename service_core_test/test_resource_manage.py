@@ -12,7 +12,7 @@ import logging
 from dependent.env_self import Env
 from dependent.requests_http import RequestHttp
 
-log = logging.getLogger("test_service_core")
+logger = logging.getLogger(__name__)
 # 增加一些ip地址
 # 测试域名console.galaxy142.com host绑定192.168.126.142再验证
 
@@ -36,6 +36,7 @@ class TestServiceRTC(object):
         re_console = "console:token=.+?(?=;)|uc:token=.+?(?=;)"
         driver["cookie"] = ";".join(re.findall(re_console, response.headers["set-cookie"]))
         driver["headers"] = {"Content-Type": "application/json", "Cookie": driver["cookie"]}
+        logger.debug("driver is {0}".format(driver))
         return driver
 
     @pytest.fixture()
@@ -44,6 +45,7 @@ class TestServiceRTC(object):
     def upload_token(self, driver):
         get_token_url = "http://api-console.buffcloud.com/upload_token/get"
         token = json.loads(requests.get(get_token_url).text)["data"]["token"]
+        logger.debug("token is {0}".format(token))
         return token
 
     @pytest.fixture()
@@ -65,6 +67,7 @@ class TestServiceRTC(object):
         # assert "filemd5" in upload_response_info["data"]
         return json.loads(response.text)["data"]
 
+    # 删除添加的游戏
     def game_delete(self, driver, gid):
         game_delete_url = "{0}/gameManage/index/internal/game/delete".format(service_core_domain)
         data = {"params": {"forward_method": "POST", "gid": gid}}
@@ -84,6 +87,7 @@ class TestServiceRTC(object):
         for customer_info in check_response["result"]:
             if customer_info["name"] == "网心科技":
                 driver["customer_id"] = check_response["result"][0]["id"]
+
     def test_channel_list(self, driver):
         url = "{0}/gameManage/index/internal/channel/list".format(service_core_domain)
         headers = driver["headers"]

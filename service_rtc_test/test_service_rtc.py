@@ -16,7 +16,7 @@ from service_rtc_test.script.put_on_avm import PutOnAvm
 from service_rtc_test.script.avm_tag import AvmTag
 from service_rtc_test.script.release_node import ReleaseNode
 
-log = logging.getLogger("test_service_rtc")
+logger = logging.getLogger(__name__)
 # 增加一些ip地址
 ip_path_one = random.randint(2, 10)
 ip_path_two = random.randint(2, 10)
@@ -27,7 +27,7 @@ class TestServiceRTC(object):
 
     @pytest.fixture(scope="class")
     def workspace(self):
-        log.info("workspace ready")
+        logger.info("workspace ready")
         # 注册avm
         RouteAvmRegister().main()
         # avm上报心跳
@@ -39,13 +39,13 @@ class TestServiceRTC(object):
         yield
         # 释放节点
         ReleaseNode().main()
-        log.info("workspace clean")
+        logger.info("workspace clean")
 
     # 如果不想跑workspace，可注释掉
     @pytest.fixture(scope="function")
     # def driver(self, workspace):
     def driver(self):
-        log.info("test case setup")
+        logger.info("test case setup")
         env = Env()
         env.get_env_info()
         driver = env.env["service_rtc"]
@@ -66,16 +66,16 @@ class TestServiceRTC(object):
                 driver["token"] = json.loads(requests.get(url, headers=header).text)["data"]["token"]
 
         except Exception as E:
-            log.debug("error is {0}".format(E))
-        log.debug("test case driver info is {0}".format(driver))
+            logger.debug("error is {0}".format(E))
+        logger.debug("test case driver info is {0}".format(driver))
         yield driver
         # close session, 以防万一，就算失败也有一个保底的close
         if "token" in driver:
             url = "http://{0}:{1}/session/close".format(driver["remote_ip"], driver["port"])
             header = {"Session-Token": driver["token"], "x-forwarded-for": driver["x-forwarded-for"]}
             requests.get(url, headers=header)
-            log.debug("close session")
-        log.info("test case teardown")
+            logger.debug("close session")
+        logger.info("test case teardown")
 
     # method: GET
     def test_peer_init(self, driver):
@@ -480,7 +480,7 @@ class TestServiceRTC(object):
         return response
 
     def start_case_log(self, name):
-        log.info("{0}: {1} start".format(self.__class__.__name__, name))
+        logger.info("{0}: {1} start".format(self.__class__.__name__, name))
 
 
 if __name__ == '__main__':
