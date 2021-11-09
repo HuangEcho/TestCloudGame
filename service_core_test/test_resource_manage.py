@@ -282,14 +282,18 @@ class TestServiceRTC(object):
         RequestHttp().request_response(method="post", url=url, headers=headers, data=data)
 
     def test_channel_update_cid_not_exist(self, driver):
-        cid = 0
-        channel_list = json.loads(self.channel_list(driver, driver["customer_id"]).text)["result"]
-        for channel in channel_list:
-            if channel["chan_id"] == "auto_test":
-                cid = channel["id"] + 999
         url = "{0}/gameManage/index/internal/channel/update".format(service_core_domain)
         headers = driver["headers"]
-        data = {"params": {"forward_method": "POST", "cid": cid, "name": "auto_test"}}
+        data = {"params": {"forward_method": "POST", "cid": 999, "name": "auto_test"}}
+        response = RequestHttp().request_response(method="post", url=url, headers=headers, data=data)
+        assert response.status_code == 200
+        check_response = json.loads(response.text)
+        assert check_response["code"] == 1
+        assert "渠道不存在" in check_response["error"]
+
+        url = "{0}/gameManage/index/internal/channel/update".format(service_core_domain)
+        headers = driver["headers"]
+        data = {"params": {"forward_method": "POST", "cid": -1, "name": "auto_test"}}
         response = RequestHttp().request_response(method="post", url=url, headers=headers, data=data)
         assert response.status_code == 200
         check_response = json.loads(response.text)
@@ -385,6 +389,15 @@ class TestServiceRTC(object):
         assert check_response["code"] == 1
         assert "渠道数据不存在" in check_response["error"]
 
+        url = "{0}/gameManage/index/internal/channel/detail".format(service_core_domain)
+        headers = driver["headers"]
+        data = {"params": {"forward_method": "GET", "cid": -1}}
+        response = RequestHttp().request_response(method="post", url=url, headers=headers, data=data)
+        assert response.status_code == 200
+        check_response = json.loads(response.text)
+        assert check_response["code"] == 1
+        assert "渠道数据不存在" in check_response["error"]
+
     # # 竟然允许cid不存在？返回了channel_id为1的数据
     # def test_channel_detail_lost_param(self, driver):
     #     url = "{0}/gameManage/index/internal/channel/detail".format(service_core_domain)
@@ -420,7 +433,7 @@ class TestServiceRTC(object):
     #     assert check_response["code"] == 1
     #     assert "参数错误" in check_response["error"]
 
-    # # 目前没有校验
+    # 目前没有校验
     # def test_game_list_uid_not_exist(self, driver):
     #     url = "{0}/gameManage/index/internal/game/list".format(service_core_domain)
     #     headers = driver["headers"]
@@ -430,9 +443,18 @@ class TestServiceRTC(object):
     #     check_response = json.loads(response.text)
     #     assert check_response["code"] == 1
     #     assert "参数错误" in check_response["error"]
+    #
+    #     url = "{0}/gameManage/index/internal/game/list".format(service_core_domain)
+    #     headers = driver["headers"]
+    #     data = {"params": {"forward_method": "GET", "uid": -1, "channel_id": driver["channel_id"]}}
+    #     response = RequestHttp().request_response(method="post", url=url, headers=headers, data=data)
+    #     assert response.status_code == 200
+    #     check_response = json.loads(response.text)
+    #     assert check_response["code"] == 1
+    #     assert "参数错误" in check_response["error"]
 
     # # 目前没有校验
-    # def test_game_list_channel_is_zaro(self, driver):
+    # def test_game_list_channel_is_zero(self, driver):
     #     url = "{0}/gameManage/index/internal/game/list".format(service_core_domain)
     #     headers = driver["headers"]
     #     data = {"params": {"forward_method": "GET", "uid": driver["customer_id"], "channel_id": 0}}
@@ -443,7 +465,27 @@ class TestServiceRTC(object):
     #     assert "参数错误" in check_response["error"]
 
     # # 目前没有校验
-    # def test_game_list_channel_not_exist(self, driver):
+    # def test_game_list_channel_id_not_exist(self, driver):
+    #     url = "{0}/gameManage/index/internal/game/list".format(service_core_domain)
+    #     headers = driver["headers"]
+    #     data = {"params": {"forward_method": "GET", "uid": driver["customer_id"], "channel_id": 999}}
+    #     response = RequestHttp().request_response(method="post", url=url, headers=headers, data=data)
+    #     assert response.status_code == 200
+    #     check_response = json.loads(response.text)
+    #     assert check_response["code"] == 1
+    #     assert "参数错误" in check_response["error"]
+    #
+    #     url = "{0}/gameManage/index/internal/game/list".format(service_core_domain)
+    #     headers = driver["headers"]
+    #     data = {"params": {"forward_method": "GET", "uid": driver["customer_id"], "channel_id": -1}}
+    #     response = RequestHttp().request_response(method="post", url=url, headers=headers, data=data)
+    #     assert response.status_code == 200
+    #     check_response = json.loads(response.text)
+    #     assert check_response["code"] == 1
+    #     assert "参数错误" in check_response["error"]
+
+    # # 目前没有校验
+    # def test_game_list_channel_lost_params(self, driver):
     #     url = "{0}/gameManage/index/internal/game/list".format(service_core_domain)
     #     headers = driver["headers"]
     #     data = {"params": {"forward_method": "GET", "uid": driver["customer_id"], "channel_id": driver["channel_id"]}}
@@ -464,17 +506,6 @@ class TestServiceRTC(object):
     #     check_response = json.loads(response.text)
     #     assert check_response["code"] == 1
     #     assert "参数错误" in check_response["error"]
-
-    # 目前没有校验
-    def test_game_list_lost_params(self, driver):
-        url = "{0}/gameManage/index/internal/game/list".format(service_core_domain)
-        headers = driver["headers"]
-        data = {"params": {"forward_method": "GET", "uid": driver["customer_id"], "channel_id": 999}}
-        response = RequestHttp().request_response(method="post", url=url, headers=headers, data=data)
-        assert response.status_code == 200
-        check_response = json.loads(response.text)
-        assert check_response["code"] == 1
-        assert "参数错误" in check_response["error"]
 
     def test_game_add_upload_type_local(self, driver, upload_apk):
         add_url = "{0}/gameManage/index/internal/game/add".format(service_core_domain)
@@ -809,7 +840,7 @@ class TestServiceRTC(object):
         assert add_response_info["code"] == 1
         assert "请选择上传游戏包apk文件" in add_response_info["error"]
 
-        # lost version_name
+        # lost version_name/internal/channel/update
         lost_download_url_data = copy.deepcopy(data)
         lost_download_url_data["params"].pop("version_name")
         response = RequestHttp().request_response(method="post", url=add_url, data=lost_download_url_data,
