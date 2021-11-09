@@ -1,4 +1,12 @@
 # pytest自动化用例
+## 环境
+使用python3来编写的，需要的依赖等：
+- pytest
+- allure
+- requests
+- logging
+- yaml
+
 ## 代码结构
 - dependent中放了一些依赖
 - report用于allure最后生成报告使用
