@@ -1,21 +1,21 @@
 environment:
   service_rtc:
-    remote_ip: 10.9.194.157
+    remote_ip: 10.10.74.3
     port: 9996
     num_start: 0
     num_end: 100
   tunnel_agent:
-    remote_ip: 10.9.194.157
+    remote_ip: 10.10.74.3
     port: 12334
     num_start: 0
     num_end: 100
   avm_manager:
-    remote_ip: 10.9.194.157
+    remote_ip: 10.10.74.3
     port: 9696
     num_start: 0
     num_end: 100
   scheduler:
-    remote_ip: 10.9.194.157
+    remote_ip: 10.10.74.3
     port: 10086
     num_start: 0
     num_end: 100
