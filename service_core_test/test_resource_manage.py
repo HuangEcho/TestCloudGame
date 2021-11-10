@@ -4,12 +4,12 @@
 import pytest
 import requests
 import json
-import random
 import re
 import os
 import copy
 import logging
 from dependent.env_self import Env
+from dependent.mysql_operation import MysqlOperation
 from dependent.requests_http import RequestHttp
 
 logger = logging.getLogger(__name__)
@@ -40,6 +40,23 @@ class TestServiceRTC(object):
         driver["cookie"] = ";".join(re.findall(re_console, response.headers["set-cookie"]))
         driver["headers"] = {"Content-Type": "application/json", "Cookie": driver["cookie"]}
         logger.debug("driver is {0}".format(driver))
+
+        # 查询到test apk任务的id，调用delete接口删除任务，不要直接删除数据库里数据
+        mysql_env = environment["mysql"]
+        db = MysqlOperation().connect_mysql(mysql_env)
+        # sql = "delete from buffcloud_core.game_manage where name like 'test apk';"
+        # MysqlOperation().commit_mysql(db, sql)
+        sql = "select id from buffcloud_core.game_manage where name='test apk';"
+        # gids为tuple类型
+        gids = MysqlOperation().query_mysql(db, sql)
+        logger.debug("query gid is {0}".format(gids))
+        MysqlOperation().close_mysql(db)
+        if len(gids) > 0:
+            for gid in gids:
+                # gid还是tuple类型
+                self.game_delete(driver, int(gid[0]))
+                logger.debug("detele task, gid is {0}".format(gid))
+
         return driver
 
     @pytest.fixture()
