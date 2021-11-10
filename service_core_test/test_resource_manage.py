@@ -164,6 +164,7 @@ class TestServiceRTC(object):
         response = RequestHttp().request_response(method="post", url=url, headers=headers, data=data)
         assert response.status_code == 200
         check_response = json.loads(response.text)
+        logger.debug("response is {0}".format(check_response))
         assert check_response["code"] == 0
         assert "result" in check_response
         assert "id" in check_response["result"][0]
@@ -178,6 +179,7 @@ class TestServiceRTC(object):
         response = RequestHttp().request_response(method="post", url=url, headers=headers, data=data)
         assert response.status_code == 200
         check_response = json.loads(response.text)
+        logger.debug("response is {0}".format(check_response))
         assert check_response["code"] == 0
         assert "result" in check_response
         assert "id" in check_response["result"][0]
@@ -187,6 +189,7 @@ class TestServiceRTC(object):
         response = self.channel_list(driver, driver["customer_id"])
         assert response.status_code == 200
         check_response = json.loads(response.text)
+        logger.debug("response is {0}".format(check_response))
         assert check_response["code"] == 0
         assert "result" in check_response
         for channel_info in check_response["result"]:
@@ -199,6 +202,7 @@ class TestServiceRTC(object):
     #     response = self.channel_list(driver, 999)
     #     assert response.status_code == 200
     #     check_response = json.loads(response.text)
+    #     logger.debug("response is {0}".format(check_response))
     #     assert check_response["code"] == 1
     #     assert "渠道不存在" in check_response["error"]
 
@@ -207,6 +211,7 @@ class TestServiceRTC(object):
     #     response = self.channel_list(driver, 0)
     #     assert response.status_code == 200
     #     check_response = json.loads(response.text)
+    #     logger.debug("response is {0}".format(check_response))
     #     assert check_response["code"] == 1
     #     assert "参数错误" in check_response["error"]
 
@@ -218,6 +223,7 @@ class TestServiceRTC(object):
     #     response = RequestHttp().request_response(method="post", url=url, headers=headers, data=data)
     #     assert response.status_code == 200
     #     check_response = json.loads(response.text)
+    #     logger.debug("response is {0}".format(check_response))
     #     assert check_response["code"] == 1
     #     # assert "error" in check_response
 
@@ -230,6 +236,7 @@ class TestServiceRTC(object):
     #     response = RequestHttp().request_response(method="post", url=url, headers=headers, data=data)
     #     assert response.status_code == 200
     #     check_response = json.loads(response.text)
+    #     logger.debug("response is {0}".format(check_response))
     #     assert check_response["code"] == 1
     #     assert "参数错误" in check_response["error"]
 
@@ -466,6 +473,7 @@ class TestServiceRTC(object):
     #     response = RequestHttp().request_response(method="post", url=url, headers=headers, data=data)
     #     assert response.status_code == 200
     #     check_response = json.loads(response.text)
+    #     logger.debug("response is {0}".format(check_response))
     #     assert check_response["code"] == 1
     #     assert "参数错误" in check_response["error"]
 
@@ -498,6 +506,7 @@ class TestServiceRTC(object):
     #     response = RequestHttp().request_response(method="post", url=url, headers=headers, data=data)
     #     assert response.status_code == 200
     #     check_response = json.loads(response.text)
+    #     logger.debug("response is {0}".format(check_response))
     #     assert check_response["code"] == 1
     #     assert "参数错误" in check_response["error"]
 
@@ -577,7 +586,7 @@ class TestServiceRTC(object):
     #     assert "参数错误" in check_response["error"]
 
     # # 目前没有校验
-    # def test_game_list_channel_lost_params(self, driver):
+    # def test_game_list_lost_params(self, driver):
     #     url = "{0}/gameManage/index/internal/game/list".format(driver["test_domain"])
     #     headers = driver["headers"]
     #     data = {"params": {"forward_method": "GET", "uid": driver["customer_id"], "channel_id": driver["channel_id"]}}
