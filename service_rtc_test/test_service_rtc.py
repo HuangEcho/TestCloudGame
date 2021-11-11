@@ -7,6 +7,7 @@ import json
 import random
 import re
 import logging
+import allure
 from dependent.env_self import Env
 from dependent.requests_http import RequestHttp
 
@@ -24,6 +25,9 @@ for_ip = "192.168.{0}.{1}"
 package_info = "channel_id=auto_test&package_name=com.cnvcs.junqi&version_code=151"
 
 
+@allure.feature("service_rtc")
+@allure.story("service_rtc-接口测试")
+@allure.suite("service_rtc-接口测试")
 class TestServiceRTC(object):
 
     # @pytest.fixture(scope="class")

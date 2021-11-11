@@ -39,7 +39,7 @@ class RequestHttp(object):
                     response = "error method"
                     logger.error("input method error. excepted get or post, actual is {0}".format(kwargs["method"]))
                 logger.info("response status_code is {0}".format(response.status_code))
-                logger.info("response text is {0}".format(response.text))
+                logger.info("response is {0}".format(json.loads(response.text)))
                 return response
             else:
                 logger.error("need input method")

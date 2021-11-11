@@ -8,6 +8,7 @@ import re
 import os
 import copy
 import logging
+import allure
 from dependent.env_self import Env
 from dependent.mysql_operation import MysqlOperation
 from dependent.requests_http import RequestHttp
@@ -23,6 +24,9 @@ apk_md5 = "b574011ba11e52e77ff169a77e183463"
 apk_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Chess_v2.8.1.apk")
 
 
+@allure.feature("service_core")
+@allure.story("service_core-业务模块")
+@allure.suite("service_core-业务模块")
 class TestServiceRTC(object):
     @pytest.fixture(scope="session")
     def driver(self):
@@ -164,7 +168,6 @@ class TestServiceRTC(object):
         response = RequestHttp().request_response(method="post", url=url, headers=headers, data=data)
         assert response.status_code == 200
         check_response = json.loads(response.text)
-        logger.debug("response is {0}".format(check_response))
         assert check_response["code"] == 0
         assert "result" in check_response
         assert "id" in check_response["result"][0]
@@ -179,7 +182,6 @@ class TestServiceRTC(object):
         response = RequestHttp().request_response(method="post", url=url, headers=headers, data=data)
         assert response.status_code == 200
         check_response = json.loads(response.text)
-        logger.debug("response is {0}".format(check_response))
         assert check_response["code"] == 0
         assert "result" in check_response
         assert "id" in check_response["result"][0]
@@ -189,7 +191,6 @@ class TestServiceRTC(object):
         response = self.channel_list(driver, driver["customer_id"])
         assert response.status_code == 200
         check_response = json.loads(response.text)
-        logger.debug("response is {0}".format(check_response))
         assert check_response["code"] == 0
         assert "result" in check_response
         for channel_info in check_response["result"]:
@@ -202,7 +203,6 @@ class TestServiceRTC(object):
     #     response = self.channel_list(driver, 999)
     #     assert response.status_code == 200
     #     check_response = json.loads(response.text)
-    #     logger.debug("response is {0}".format(check_response))
     #     assert check_response["code"] == 1
     #     assert "渠道不存在" in check_response["error"]
 
@@ -211,7 +211,6 @@ class TestServiceRTC(object):
     #     response = self.channel_list(driver, 0)
     #     assert response.status_code == 200
     #     check_response = json.loads(response.text)
-    #     logger.debug("response is {0}".format(check_response))
     #     assert check_response["code"] == 1
     #     assert "参数错误" in check_response["error"]
 
@@ -223,7 +222,6 @@ class TestServiceRTC(object):
     #     response = RequestHttp().request_response(method="post", url=url, headers=headers, data=data)
     #     assert response.status_code == 200
     #     check_response = json.loads(response.text)
-    #     logger.debug("response is {0}".format(check_response))
     #     assert check_response["code"] == 1
     #     # assert "error" in check_response
 
@@ -236,7 +234,6 @@ class TestServiceRTC(object):
     #     response = RequestHttp().request_response(method="post", url=url, headers=headers, data=data)
     #     assert response.status_code == 200
     #     check_response = json.loads(response.text)
-    #     logger.debug("response is {0}".format(check_response))
     #     assert check_response["code"] == 1
     #     assert "参数错误" in check_response["error"]
 
@@ -248,7 +245,6 @@ class TestServiceRTC(object):
         response = RequestHttp().request_response(method="post", url=url, headers=headers, data=data)
         assert response.status_code == 200
         check_response = json.loads(response.text)
-        logger.debug("response error is {0}".format(check_response["error"]))
         assert check_response["code"] == 1
         assert "参数错误" in check_response["error"]
 
@@ -260,7 +256,6 @@ class TestServiceRTC(object):
         response = RequestHttp().request_response(method="post", url=url, headers=headers, data=data)
         assert response.status_code == 200
         check_response = json.loads(response.text)
-        logger.debug("response error is {0}".format(check_response["error"]))
         assert check_response["code"] == 1
         assert "渠道ID重复" in check_response["error"]
 
@@ -272,7 +267,6 @@ class TestServiceRTC(object):
         response = RequestHttp().request_response(method="post", url=url, headers=headers, data=data)
         assert response.status_code == 200
         check_response = json.loads(response.text)
-        logger.debug("response error is {0}".format(check_response["error"]))
         assert check_response["code"] == 1
         assert "参数错误" in check_response["error"]
 
@@ -288,7 +282,6 @@ class TestServiceRTC(object):
         response = RequestHttp().request_response(method="post", url=url, headers=headers, data=data)
         assert response.status_code == 200
         check_response = json.loads(response.text)
-        logger.debug("response error is {0}".format(check_response["error"]))
         assert check_response["code"] == 1
         assert "参数错误" in check_response["error"]
 
@@ -300,7 +293,6 @@ class TestServiceRTC(object):
         response = RequestHttp().request_response(method="post", url=url, headers=headers, data=data)
         assert response.status_code == 200
         check_response = json.loads(response.text)
-        logger.debug("response error is {0}".format(check_response["error"]))
         assert check_response["code"] == 1
         assert "参数错误" in check_response["error"]
 
@@ -316,7 +308,6 @@ class TestServiceRTC(object):
         response = RequestHttp().request_response(method="post", url=url, headers=headers, data=data)
         assert response.status_code == 200
         check_response = json.loads(response.text)
-        logger.debug("response error is {0}".format(check_response["error"]))
         assert check_response["code"] == 1
         assert "参数错误" in check_response["error"]
 
@@ -327,7 +318,6 @@ class TestServiceRTC(object):
         response = RequestHttp().request_response(method="post", url=url, headers=headers, data=data)
         assert response.status_code == 200
         check_response = json.loads(response.text)
-        logger.debug("response error is {0}".format(check_response["error"]))
         assert check_response["code"] == 1
         assert "参数错误" in check_response["error"]
 
@@ -338,7 +328,6 @@ class TestServiceRTC(object):
         response = RequestHttp().request_response(method="post", url=url, headers=headers, data=data)
         assert response.status_code == 200
         check_response = json.loads(response.text)
-        logger.debug("response error is {0}".format(check_response["error"]))
         assert check_response["code"] == 1
         assert "参数错误" in check_response["error"]
 
@@ -349,7 +338,6 @@ class TestServiceRTC(object):
         response = RequestHttp().request_response(method="post", url=url, headers=headers, data=data)
         assert response.status_code == 200
         check_response = json.loads(response.text)
-        logger.debug("response error is {0}".format(check_response["error"]))
         assert check_response["code"] == 1
         assert "参数错误" in check_response["error"]
 
@@ -379,7 +367,6 @@ class TestServiceRTC(object):
         response = RequestHttp().request_response(method="post", url=url, headers=headers, data=data)
         assert response.status_code == 200
         check_response = json.loads(response.text)
-        logger.debug("response error is {0}".format(check_response["error"]))
         assert check_response["code"] == 1
         assert "渠道不存在" in check_response["error"]
 
@@ -389,7 +376,6 @@ class TestServiceRTC(object):
         response = RequestHttp().request_response(method="post", url=url, headers=headers, data=data)
         assert response.status_code == 200
         check_response = json.loads(response.text)
-        logger.debug("response error is {0}".format(check_response["error"]))
         assert check_response["code"] == 1
         assert "渠道不存在" in check_response["error"]
 
@@ -400,7 +386,6 @@ class TestServiceRTC(object):
         response = RequestHttp().request_response(method="post", url=url, headers=headers, data=data)
         assert response.status_code == 200
         check_response = json.loads(response.text)
-        logger.debug("response error is {0}".format(check_response["error"]))
         assert check_response["code"] == 1
         assert "参数错误" in check_response["error"]
 
@@ -416,7 +401,6 @@ class TestServiceRTC(object):
         response = RequestHttp().request_response(method="post", url=url, headers=headers, data=data)
         assert response.status_code == 200
         check_response = json.loads(response.text)
-        logger.debug("response error is {0}".format(check_response["error"]))
         assert check_response["code"] == 1
         assert "参数错误" in check_response["error"]
 
@@ -435,7 +419,6 @@ class TestServiceRTC(object):
         response = RequestHttp().request_response(method="post", url=url, headers=headers, data=update_data)
         assert response.status_code == 200
         check_response = json.loads(response.text)
-        logger.debug("response error is {0}".format(check_response["error"]))
         assert check_response["code"] == 1
         assert "参数错误" in check_response["error"]
 
@@ -445,7 +428,6 @@ class TestServiceRTC(object):
         response = RequestHttp().request_response(method="post", url=url, headers=headers, data=update_data)
         assert response.status_code == 200
         check_response = json.loads(response.text)
-        logger.debug("response error is {0}".format(check_response["error"]))
         assert check_response["code"] == 1
         assert "参数错误" in check_response["error"]
 
@@ -473,7 +455,6 @@ class TestServiceRTC(object):
     #     response = RequestHttp().request_response(method="post", url=url, headers=headers, data=data)
     #     assert response.status_code == 200
     #     check_response = json.loads(response.text)
-    #     logger.debug("response is {0}".format(check_response))
     #     assert check_response["code"] == 1
     #     assert "参数错误" in check_response["error"]
 
@@ -484,7 +465,6 @@ class TestServiceRTC(object):
         response = RequestHttp().request_response(method="post", url=url, headers=headers, data=data)
         assert response.status_code == 200
         check_response = json.loads(response.text)
-        logger.debug("response error is {0}".format(check_response["error"]))
         assert check_response["code"] == 1
         assert "渠道数据不存在" in check_response["error"]
 
@@ -494,7 +474,6 @@ class TestServiceRTC(object):
         response = RequestHttp().request_response(method="post", url=url, headers=headers, data=data)
         assert response.status_code == 200
         check_response = json.loads(response.text)
-        logger.debug("response error is {0}".format(check_response["error"]))
         assert check_response["code"] == 1
         assert "渠道数据不存在" in check_response["error"]
 
@@ -506,7 +485,6 @@ class TestServiceRTC(object):
     #     response = RequestHttp().request_response(method="post", url=url, headers=headers, data=data)
     #     assert response.status_code == 200
     #     check_response = json.loads(response.text)
-    #     logger.debug("response is {0}".format(check_response))
     #     assert check_response["code"] == 1
     #     assert "参数错误" in check_response["error"]
 
@@ -646,7 +624,6 @@ class TestServiceRTC(object):
                                                   headers=headers)
         assert response.status_code == 200
         check_response = json.loads(response.text)
-        logger.debug("response error is {0}".format(check_response["error"]))
         assert check_response["code"] == 1
         assert "uid不能为空" in check_response["error"]
 
@@ -683,7 +660,6 @@ class TestServiceRTC(object):
                                                   headers=headers)
         assert response.status_code == 200
         check_response = json.loads(response.text)
-        logger.debug("response error is {0}".format(check_response["error"]))
         assert check_response["code"] == 1
         assert "渠道id不能为空" in check_response["error"]
 
@@ -698,7 +674,6 @@ class TestServiceRTC(object):
                                                   headers=headers)
         assert response.status_code == 200
         check_response = json.loads(response.text)
-        logger.debug("response error is {0}".format(check_response["error"]))
         assert check_response["code"] == 1
         assert "渠道信息不存在" in check_response["error"]
 
@@ -708,7 +683,6 @@ class TestServiceRTC(object):
                                                   headers=headers)
         assert response.status_code == 200
         check_response = json.loads(response.text)
-        logger.debug("response error is {0}".format(check_response["error"]))
         assert check_response["code"] == 1
         assert "渠道信息不存在" in check_response["error"]
 
@@ -722,7 +696,6 @@ class TestServiceRTC(object):
         response = RequestHttp().request_response(method="post", url=add_url, data=data, headers=headers)
         assert response.status_code == 200
         check_response = json.loads(response.text)
-        logger.debug("response error is {0}".format(check_response["error"]))
         assert check_response["code"] == 1
         assert "请输入游戏名称" in check_response["error"]
 
@@ -735,7 +708,6 @@ class TestServiceRTC(object):
         response = RequestHttp().request_response(method="post", url=add_url, data=data, headers=headers)
         assert response.status_code == 200
         check_response = json.loads(response.text)
-        logger.debug("response error is {0}".format(check_response["error"]))
         assert check_response["code"] == 1
         assert "请选择上传游戏包方式" in check_response["error"]
 
@@ -748,7 +720,6 @@ class TestServiceRTC(object):
         response = RequestHttp().request_response(method="post", url=add_url, data=data, headers=headers)
         assert response.status_code == 200
         check_response = json.loads(response.text)
-        logger.debug("response error is {0}".format(check_response["error"]))
         assert check_response["code"] == 1
         assert "参数错误" in check_response["error"]
 
@@ -757,7 +728,6 @@ class TestServiceRTC(object):
         response = RequestHttp().request_response(method="post", url=add_url, data=data, headers=headers)
         assert response.status_code == 200
         check_response = json.loads(response.text)
-        logger.debug("response error is {0}".format(check_response["error"]))
         assert check_response["code"] == 1
         assert "参数错误" in check_response["error"]
 
@@ -771,7 +741,6 @@ class TestServiceRTC(object):
         response = RequestHttp().request_response(method="post", url=add_url, data=data, headers=headers)
         assert response.status_code == 200
         check_response = json.loads(response.text)
-        logger.debug("response error is {0}".format(check_response["error"]))
         assert check_response["code"] == 1
         assert "请选择游戏类别" in check_response["error"]
 
@@ -786,7 +755,6 @@ class TestServiceRTC(object):
     #     assert response.status_code == 200
     #     check_response = json.loads(response.text)
     #     assert check_response["code"] == 1
-    #     logger.debug("response error is {0}".format(check_response["error"]))
     #     assert "请选择游戏类别" in check_response["error"]
     #
     #     # 游戏类别设置为-1
@@ -805,7 +773,6 @@ class TestServiceRTC(object):
         response = RequestHttp().request_response(method="post", url=add_url, data=data, headers=headers)
         assert response.status_code == 200
         check_response = json.loads(response.text)
-        logger.debug("response error is {0}".format(check_response["error"]))
         assert check_response["code"] == 1
         assert "请选择游戏类型" in check_response["error"]
 
@@ -864,7 +831,6 @@ class TestServiceRTC(object):
         response = RequestHttp().request_response(method="post", url=add_url, data=data, headers=headers)
         assert response.status_code == 200
         check_response = json.loads(response.text)
-        logger.debug("response error is {0}".format(check_response["error"]))
         assert check_response["code"] == 1
         assert "请选择播流画质" in check_response["error"]
 
@@ -879,7 +845,6 @@ class TestServiceRTC(object):
         response = RequestHttp().request_response(method="post", url=add_url, data=data_lost_params, headers=headers)
         assert response.status_code == 200
         check_response = json.loads(response.text)
-        logger.debug("response error is {0}".format(check_response["error"]))
         assert check_response["code"] == 1
         assert "请选择上传游戏包apk文件" in check_response["error"]
 
@@ -889,7 +854,6 @@ class TestServiceRTC(object):
         response = RequestHttp().request_response(method="post", url=add_url, data=data_lost_params, headers=headers)
         assert response.status_code == 200
         check_response = json.loads(response.text)
-        logger.debug("response error is {0}".format(check_response["error"]))
         assert check_response["code"] == 1
         assert "请选择上传游戏包apk文件" in check_response["error"]
 
@@ -899,7 +863,6 @@ class TestServiceRTC(object):
         response = RequestHttp().request_response(method="post", url=add_url, data=data_lost_params, headers=headers)
         assert response.status_code == 200
         check_response = json.loads(response.text)
-        logger.debug("response error is {0}".format(check_response["error"]))
         assert check_response["code"] == 1
         assert "请选择上传游戏包apk文件" in check_response["error"]
 
@@ -909,7 +872,6 @@ class TestServiceRTC(object):
         response = RequestHttp().request_response(method="post", url=add_url, data=data_lost_params, headers=headers)
         assert response.status_code == 200
         check_response = json.loads(response.text)
-        logger.debug("response error is {0}".format(check_response["error"]))
         assert check_response["code"] == 1
         assert "请选择上传游戏包apk文件" in check_response["error"]
 
@@ -919,7 +881,6 @@ class TestServiceRTC(object):
         response = RequestHttp().request_response(method="post", url=add_url, data=data_lost_params, headers=headers)
         assert response.status_code == 200
         check_response = json.loads(response.text)
-        logger.debug("response error is {0}".format(check_response["error"]))
         assert check_response["code"] == 1
         assert "请选择上传游戏包apk文件" in check_response["error"]
 
@@ -946,7 +907,6 @@ class TestServiceRTC(object):
         response = RequestHttp().request_response(method="post", url=add_url, data=data_lost_params, headers=headers)
         assert response.status_code == 200
         check_response = json.loads(response.text)
-        logger.debug("response error is {0}".format(check_response["error"]))
         assert check_response["code"] == 1
         assert "请输入游戏包下载地址" in check_response["error"]
 
@@ -956,7 +916,6 @@ class TestServiceRTC(object):
         response = RequestHttp().request_response(method="post", url=add_url, data=data_lost_params, headers=headers)
         assert response.status_code == 200
         check_response = json.loads(response.text)
-        logger.debug("response error is {0}".format(check_response["error"]))
         assert check_response["code"] == 1
         assert "请输入上传游戏包md5值" in check_response["error"]
 
@@ -970,7 +929,6 @@ class TestServiceRTC(object):
         response = RequestHttp().request_response(method="post", url=add_url, data=data_lost_params, headers=headers)
         assert response.status_code == 200
         check_response = json.loads(response.text)
-        logger.debug("response error is {0}".format(check_response["error"]))
         assert check_response["code"] == 1
         assert "uid不能为空" in check_response["error"]
 
@@ -981,7 +939,6 @@ class TestServiceRTC(object):
                                                   headers=headers)
         assert response.status_code == 200
         check_response = json.loads(response.text)
-        logger.debug("response error is {0}".format(check_response["error"]))
         assert check_response["code"] == 1
         assert "渠道id不能为空" in check_response["error"]
 
@@ -992,7 +949,6 @@ class TestServiceRTC(object):
                                                   headers=headers)
         assert response.status_code == 200
         check_response = json.loads(response.text)
-        logger.debug("response error is {0}".format(check_response["error"]))
         assert check_response["code"] == 1
         assert "请输入游戏名称" in check_response["error"]
 
@@ -1003,7 +959,6 @@ class TestServiceRTC(object):
                                                   headers=headers)
         assert response.status_code == 200
         check_response = json.loads(response.text)
-        logger.debug("response error is {0}".format(check_response["error"]))
         assert check_response["code"] == 1
         assert "请选择上传游戏包方式" in check_response["error"]
 
@@ -1014,7 +969,6 @@ class TestServiceRTC(object):
                                                   headers=headers)
         assert response.status_code == 200
         check_response = json.loads(response.text)
-        logger.debug("response error is {0}".format(check_response["error"]))
         assert check_response["code"] == 1
         assert "请选择游戏类别" in check_response["error"]
 
@@ -1025,7 +979,6 @@ class TestServiceRTC(object):
                                                   headers=headers)
         assert response.status_code == 200
         check_response = json.loads(response.text)
-        logger.debug("response error is {0}".format(check_response["error"]))
         assert check_response["code"] == 1
         assert "请选择游戏类型" in check_response["error"]
 
@@ -1072,7 +1025,6 @@ class TestServiceRTC(object):
         response = RequestHttp().request_response(method="post", url=add_url, data=data_lost_params, headers=headers)
         assert response.status_code == 200
         check_response = json.loads(response.text)
-        logger.debug("response error is {0}".format(check_response["error"]))
         assert check_response["code"] == 1
         assert "请选择上传游戏包apk文件" in check_response["error"]
 
@@ -1082,7 +1034,6 @@ class TestServiceRTC(object):
         response = RequestHttp().request_response(method="post", url=add_url, data=data_lost_params, headers=headers)
         assert response.status_code == 200
         check_response = json.loads(response.text)
-        logger.debug("response error is {0}".format(check_response["error"]))
         assert check_response["code"] == 1
         assert "请选择上传游戏包apk文件" in check_response["error"]
 
@@ -1092,7 +1043,6 @@ class TestServiceRTC(object):
         response = RequestHttp().request_response(method="post", url=add_url, data=data_lost_params, headers=headers)
         assert response.status_code == 200
         check_response = json.loads(response.text)
-        logger.debug("response error is {0}".format(check_response["error"]))
         assert check_response["code"] == 1
         assert "请选择上传游戏包apk文件" in check_response["error"]
 
@@ -1102,7 +1052,6 @@ class TestServiceRTC(object):
         response = RequestHttp().request_response(method="post", url=add_url, data=data_lost_params, headers=headers)
         assert response.status_code == 200
         check_response = json.loads(response.text)
-        logger.debug("response error is {0}".format(check_response["error"]))
         assert check_response["code"] == 1
         assert "请选择上传游戏包apk文件" in check_response["error"]
 
@@ -1112,7 +1061,6 @@ class TestServiceRTC(object):
         response = RequestHttp().request_response(method="post", url=add_url, data=data_lost_params, headers=headers)
         assert response.status_code == 200
         check_response = json.loads(response.text)
-        logger.debug("response error is {0}".format(check_response["error"]))
         assert check_response["code"] == 1
         assert "请选择上传游戏包apk文件" in check_response["error"]
 
@@ -1126,7 +1074,6 @@ class TestServiceRTC(object):
         response = RequestHttp().request_response(method="post", url=add_url, data=data_lost_params, headers=headers)
         assert response.status_code == 200
         check_response = json.loads(response.text)
-        logger.debug("response error is {0}".format(check_response["error"]))
         assert check_response["code"] == 1
         assert "请输入游戏包下载地址" in check_response["error"]
 
@@ -1136,7 +1083,6 @@ class TestServiceRTC(object):
         response = RequestHttp().request_response(method="post", url=add_url, data=data_lost_params, headers=headers)
         assert response.status_code == 200
         check_response = json.loads(response.text)
-        logger.debug("response error is {0}".format(check_response["error"]))
         assert check_response["code"] == 1
         assert "请输入上传游戏包md5值" in check_response["error"]
 
