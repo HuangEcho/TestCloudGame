@@ -193,8 +193,8 @@ class TestServiceRTC(object):
         assert response.status_code == 200
         check_response = json.loads(response.text)
         assert check_response["code"] == 700
-        # sessionId没有绑定实例
-        assert "get sessionToken fail" in check_response["message"]
+        # invalid session
+        assert len(check_response["message"]) > 1
 
     # method GET
     def test_connection_allocate_v2_without_channel(self, driver):
@@ -331,7 +331,7 @@ class TestServiceRTC(object):
         assert response.status_code == 200
         check_response = json.loads(response.text)
         assert check_response["code"] == 700
-        assert "session mismatch channelId, packageName" in check_response["error"]
+        assert "session mismatch channelId, packageName" in check_response["message"]
 
     def test_connection_allocate_v2_mismatch_package_name(self, driver):
         logger.info("test_connection_allocate_v2_mismatch_package_name start")
@@ -343,7 +343,7 @@ class TestServiceRTC(object):
         assert response.status_code == 200
         check_response = json.loads(response.text)
         assert check_response["code"] == 700
-        assert "session mismatch channelId, packageName" in check_response["error"]
+        assert "session mismatch channelId, packageName" in check_response["message"]
 
     # method GET
     def test_keep_alive(self, driver):
@@ -448,12 +448,14 @@ class TestServiceRTC(object):
         self.connection_allocate_v2(driver, token)
 
         url = "http://{0}:{1}/admin/connection/get?sessionToken={2}".format(driver["remote_ip"], driver["port"],
-                                                                            driver["token"])
+                                                                            token)
         header = {"x-forwarded-for": driver["x-forwarded-for"]}
         response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
         check_response = json.loads(response.text)
         assert check_response["code"] == 0
+
+        self.close_session(driver, token)
 
     def test_admin_connection_get_without_connection(self, driver):
         logger.info("test_admin_connection_get_without_connection start")
@@ -505,11 +507,14 @@ class TestServiceRTC(object):
         url = "http://{0}:{1}/admin/agent/msg".format(driver["remote_ip"], driver["port"])
         header = {"x-forwarded-for": driver["x-forwarded-for"]}
         data = {"node_id": node_id,
-                "data": {"type": "closed", "session_id": driver["token"], "reason": "test", "code": 1}}
+                "data": {"type": "closed", "session_id": token, "reason": "test", "code": 1}}
         response = RequestHttp().request_response(url=url, method="post", headers=header, data=data)
         assert response.status_code == 200
         check_response = json.loads(response.text)
         assert check_response["code"] == 0
+
+        self.close_session(driver, token)
+
 
     # @pytest.mark.skip
     # def test_admin_agent_msg_closed_without_node_id(self, driver):
@@ -545,6 +550,12 @@ class TestServiceRTC(object):
         header = {"userid": "1", "appid": "auto_test", "x-forwarded-for": driver["x-forwarded-for"]}
         token = json.loads(requests.get(url, headers=header).text)["data"]["token"]
         return token
+
+    def close_session(self, driver, token):
+        url = "http://{0}:{1}/session/close".format(driver["remote_ip"], driver["port"])
+        header = {"Session-Token": token, "x-forwarded-for": driver["x-forwarded-for"]}
+        requests.get(url, headers=header)
+        logger.debug("close session")
 
 
 if __name__ == '__main__':
