@@ -22,7 +22,6 @@ ip_path_one = random.randint(2, 10)
 ip_path_two = random.randint(2, 10)
 for_ip = "192.168.{0}.{1}"
 package_info = "channel_id=auto_test&package_name=com.cnvcs.junqi&version_code=151"
-# package_info = "channel_id=5&package_name=com.cnvcs.lian&version_code=105"
 
 
 class TestServiceRTC(object):
@@ -66,7 +65,7 @@ class TestServiceRTC(object):
                 driver["peer_id"] = json.loads(requests.get(url, headers=header).text)["data"]["peerId"]
                 url = "http://{0}:{1}/session/create".format(driver["remote_ip"], driver["port"])
                 url = url + '?device_user={"auto_test":"auto_test"}'
-                header = {"userid": "1", "appid": "test", "x-forwarded-for": driver["x-forwarded-for"]}
+                header = {"userid": "1", "appid": "auto_test", "x-forwarded-for": driver["x-forwarded-for"]}
                 driver["token"] = json.loads(requests.get(url, headers=header).text)["data"]["token"]
 
         except Exception as E:
@@ -166,7 +165,7 @@ class TestServiceRTC(object):
 
     # method GET
     def test_connection_allocate_v2(self, driver):
-        # 固定了一些信息，具体修改的地方，我还没有很了解，后续了解后再修改
+        # 使用已上线的一个游戏包信息
         logger.info("test_connection_allocate_v2 start")
         url = "http://{0}:{1}/connection/allocate/v2?{2}".format(
             driver["remote_ip"], driver["port"], package_info)
@@ -198,12 +197,12 @@ class TestServiceRTC(object):
         assert "get sessionToken fail" in check_response["message"]
 
     # method GET
-    # 目前测试环境里有一个not_exist的section，会导致500的状态码，后面要问一下其他同事，如何在测试环境中去掉这个section
     def test_connection_allocate_v2_without_channel(self, driver):
         logger.info("test_connection_allocate_v2_without_channel start")
+        token = self.get_token(driver)
         url = "http://{0}:{1}/connection/allocate/v2?package_name=com.cnvcs.junqi&version_code=151".format(
             driver["remote_ip"], driver["port"])
-        header = {"Session-Token": driver["token"], "Peer-Id": driver["peer_id"],
+        header = {"Session-Token": token,
                   "x-forwarded-for": driver["x-forwarded-for"]}
         response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
@@ -216,9 +215,10 @@ class TestServiceRTC(object):
     # method GET
     def test_connection_allocate_v2_channel_is_null(self, driver):
         logger.info("test_connection_allocate_v2_channel_is_null start")
+        token = self.get_token(driver)
         url = "http://{0}:{1}/connection/allocate/v2?channel_id=&package_name=com.cnvcs.junqi&version_code=151".format(
             driver["remote_ip"], driver["port"])
-        header = {"Session-Token": driver["token"], "Peer-Id": driver["peer_id"],
+        header = {"Session-Token": token, "Peer-Id": driver["peer_id"],
                   "x-forwarded-for": driver["x-forwarded-for"]}
         response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
@@ -231,9 +231,10 @@ class TestServiceRTC(object):
     # method GET
     def test_connection_allocate_v2_without_pacakage_name_is_null(self, driver):
         logger.info("test_connection_allocate_v2_without_pacakage_name_is_null start")
+        token = self.get_token(driver)
         url = "http://{0}:{1}/connection/allocate/v2?channel_id=auto_test&package_name=&version_code=151".format(
             driver["remote_ip"], driver["port"])
-        header = {"Session-Token": driver["token"], "Peer-Id": driver["peer_id"],
+        header = {"Session-Token": token, "Peer-Id": driver["peer_id"],
                   "x-forwarded-for": driver["x-forwarded-for"]}
         response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
@@ -246,9 +247,10 @@ class TestServiceRTC(object):
     # method GET
     def test_connection_allocate_v2_without_pacakage_name(self, driver):
         logger.info("test_connection_allocate_v2_without_pacakage_name start")
+        token = self.get_token(driver)
         url = "http://{0}:{1}/connection/allocate/v2?channel_id=auto_test&version_code=151".format(
             driver["remote_ip"], driver["port"])
-        header = {"Session-Token": driver["token"], "Peer-Id": driver["peer_id"],
+        header = {"Session-Token": token, "Peer-Id": driver["peer_id"],
                   "x-forwarded-for": driver["x-forwarded-for"]}
         response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
@@ -262,9 +264,10 @@ class TestServiceRTC(object):
     # 已经上线的游戏允许没有version_code；没有上线的游戏不允许没有version_code
     def test_connection_allocate_v2_without_version_code(self, driver):
         logger.info("test_connection_allocate_v2_without_version_code start")
+        token = self.get_token(driver)
         url = "http://{0}:{1}/connection/allocate/v2?channel_id=auto_test&package_name=com.cnvcs.junqi".format(
             driver["remote_ip"], driver["port"])
-        header = {"Session-Token": driver["token"], "Peer-Id": driver["peer_id"],
+        header = {"Session-Token": token, "Peer-Id": driver["peer_id"],
                   "x-forwarded-for": driver["x-forwarded-for"]}
         response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
@@ -276,9 +279,10 @@ class TestServiceRTC(object):
     # 目前模拟的游戏没有上线，报错会有"get gameData error"
     def test_connection_allocate_v2_version_code_is_null(self, driver):
         logger.info("test_connection_allocate_v2_version_code_is_null start")
+        token = self.get_token(driver)
         url = "http://{0}:{1}/connection/allocate/v2?channel_id=auto_test&package_name=com.cnvcs.junqi&version_code=".format(
             driver["remote_ip"], driver["port"])
-        header = {"Session-Token": driver["token"], "Peer-Id": driver["peer_id"],
+        header = {"Session-Token": token, "Peer-Id": driver["peer_id"],
                   "x-forwarded-for": driver["x-forwarded-for"]}
         response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
@@ -288,9 +292,10 @@ class TestServiceRTC(object):
 
     def test_connection_allocate_v2_version_code_not_int(self, driver):
         logger.info("test_connection_allocate_v2_version_code_not_int start")
+        token = self.get_token(driver)
         url = "http://{0}:{1}/connection/allocate/v2?channel_id=auto_test&package_name=com.cnvcs.junqi&version_code=test".format(
             driver["remote_ip"], driver["port"])
-        header = {"Session-Token": driver["token"], "Peer-Id": driver["peer_id"],
+        header = {"Session-Token": token, "Peer-Id": driver["peer_id"],
                   "x-forwarded-for": driver["x-forwarded-for"]}
         response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
@@ -304,9 +309,10 @@ class TestServiceRTC(object):
     # 这里是否要先判断channel_id是否存在？
     def test_connection_allocate_v2_param_wrong(self, driver):
         logger.info("test_connection_allocate_v2_param_wrong start")
+        token = self.get_token(driver)
         url = "http://{0}:{1}/connection/allocate/v2?channel_id=wrong&package_name=com.cnvcs.junqi&version_code=151".format(
             driver["remote_ip"], driver["port"])
-        header = {"Session-Token": driver["token"], "Peer-Id": driver["peer_id"],
+        header = {"Session-Token": token, "Peer-Id": driver["peer_id"],
                   "x-forwarded-for": driver["x-forwarded-for"]}
         response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
@@ -315,11 +321,36 @@ class TestServiceRTC(object):
         # 确认message里有错误信息。这种情况下，返回为 "无相应的游戏数据"
         assert len(check_response["message"]) > 1
 
+    def test_connection_allocate_v2_mismatch_channel_id(self, driver):
+        logger.info("test_connection_allocate_v2_mismatch_channel_id start")
+        url = "http://{0}:{1}/connection/allocate/v2?channel_id=mismatch&package_name=com.cnvcs.junqi&version_code=151".format(
+            driver["remote_ip"], driver["port"])
+        header = {"Session-Token": driver["token"], "Peer-Id": driver["peer_id"],
+                  "x-forwarded-for": driver["x-forwarded-for"]}
+        response = RequestHttp().request_response(url=url, method="get", headers=header)
+        assert response.status_code == 200
+        check_response = json.loads(response.text)
+        assert check_response["code"] == 700
+        assert "session mismatch channelId, packageName" in check_response["error"]
+
+    def test_connection_allocate_v2_mismatch_package_name(self, driver):
+        logger.info("test_connection_allocate_v2_mismatch_package_name start")
+        url = "http://{0}:{1}/connection/allocate/v2?channel_id=auto_test&package_name=mismatch&version_code=151".format(
+            driver["remote_ip"], driver["port"])
+        header = {"Session-Token": driver["token"], "Peer-Id": driver["peer_id"],
+                  "x-forwarded-for": driver["x-forwarded-for"]}
+        response = RequestHttp().request_response(url=url, method="get", headers=header)
+        assert response.status_code == 200
+        check_response = json.loads(response.text)
+        assert check_response["code"] == 700
+        assert "session mismatch channelId, packageName" in check_response["error"]
+
     # method GET
     def test_keep_alive(self, driver):
         logger.info("test_keep_alive start")
         # 绑定实例
-        self.connection_allocate_v2(driver)
+        token = self.get_token(driver)
+        self.connection_allocate_v2(driver, token)
 
         url = "http://{0}:{1}/session/keepalive".format(driver["remote_ip"], driver["port"])
         header = {"Session-Token": driver["token"], "x-forwarded-for": driver["x-forwarded-for"]}
@@ -331,8 +362,10 @@ class TestServiceRTC(object):
     # 没有绑定实例化，直接请求keep_alive
     def test_keep_alive_without_connection(self, driver):
         logger.info("test_keep_alive_without_connection start")
+        # 只获取了token，没有去实例化
+        token = self.get_token(driver)
         url = "http://{0}:{1}/session/keepalive".format(driver["remote_ip"], driver["port"])
-        header = {"Session-Token": driver["token"], "x-forwarded-for": driver["x-forwarded-for"]}
+        header = {"Session-Token": token, "x-forwarded-for": driver["x-forwarded-for"]}
         response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
         check_response = json.loads(response.text)
@@ -371,7 +404,8 @@ class TestServiceRTC(object):
     def test_session_close(self, driver):
         logger.info("test_session_close start")
         # 绑定实例
-        self.connection_allocate_v2(driver)
+        token = self.get_token(driver)
+        self.connection_allocate_v2(driver, token)
 
         url = "http://{0}:{1}/session/close".format(driver["remote_ip"], driver["port"])
         header = {"Session-Token": driver["token"], "x-forwarded-for": driver["x-forwarded-for"]}
@@ -383,7 +417,8 @@ class TestServiceRTC(object):
     def test_session_close_without_token(self, driver):
         logger.info("test_session_close_without_token start")
         # 绑定实例
-        self.connection_allocate_v2(driver)
+        token = self.get_token(driver)
+        self.connection_allocate_v2(driver, token)
 
         url = "http://{0}:{1}/session/close".format(driver["remote_ip"], driver["port"])
         header = {"x-forwarded-for": driver["x-forwarded-for"]}
@@ -409,7 +444,8 @@ class TestServiceRTC(object):
     def test_admin_connection_get(self, driver):
         logger.info("test_admin_connection_get start")
         # 绑定实例
-        self.connection_allocate_v2(driver)
+        token = self.get_token(driver)
+        self.connection_allocate_v2(driver, token)
 
         url = "http://{0}:{1}/admin/connection/get?sessionToken={2}".format(driver["remote_ip"], driver["port"],
                                                                             driver["token"])
@@ -434,7 +470,8 @@ class TestServiceRTC(object):
     def test_admin_connection_get_param_without_token(self, driver):
         logger.info("test_admin_connection_get_param_without_token start")
         # 绑定实例
-        self.connection_allocate_v2(driver)
+        token = self.get_token(driver)
+        self.connection_allocate_v2(driver, token)
 
         url = "http://{0}:{1}/admin/connection/get".format(driver["remote_ip"], driver["port"])
         header = {"x-forwarded-for": driver["x-forwarded-for"]}
@@ -462,7 +499,8 @@ class TestServiceRTC(object):
     def test_admin_agent_msg_closed(self, driver):
         logger.info("test_admin_agent_msg_closed start")
         # 绑定实例
-        self.connection_allocate_v2(driver)
+        token = self.get_token(driver)
+        self.connection_allocate_v2(driver, token)
         node_id = json.loads(self.connection_get(driver).text)["data"]["connection"]["nodeId"]
         url = "http://{0}:{1}/admin/agent/msg".format(driver["remote_ip"], driver["port"])
         header = {"x-forwarded-for": driver["x-forwarded-for"]}
@@ -486,10 +524,10 @@ class TestServiceRTC(object):
     #     assert check_response["code"] == 0
 
     # 为终端peer调度可用的实例，并将调度结果信息绑定到peer的session会话信息中
-    def connection_allocate_v2(self, driver):
-        url = "http://{0}:{1}/connection/allocate/v2?channel_id=auto_test&package_name=com.cnvcs.junqi&version_code=151".format(
-            driver["remote_ip"], driver["port"])
-        header = {"Session-Token": driver["token"], "Peer-Id": driver["peer_id"],
+    def connection_allocate_v2(self, driver, token):
+        url = "http://{0}:{1}/connection/allocate/v2?{2}".format(
+            driver["remote_ip"], driver["port"], package_info)
+        header = {"Session-Token": token, "Peer-Id": driver["peer_id"],
                   "x-forwarded-for": driver["x-forwarded-for"]}
         response = RequestHttp().request_response(url=url, method="get", headers=header)
         return response
@@ -500,6 +538,13 @@ class TestServiceRTC(object):
         header = {"x-forwarded-for": driver["x-forwarded-for"]}
         response = RequestHttp().request_response(url=url, method="get", headers=header)
         return response
+
+    def get_token(self, driver):
+        url = "http://{0}:{1}/session/create".format(driver["remote_ip"], driver["port"])
+        url = url + '?device_user={"auto_test":"auto_test"}'
+        header = {"userid": "1", "appid": "auto_test", "x-forwarded-for": driver["x-forwarded-for"]}
+        token = json.loads(requests.get(url, headers=header).text)["data"]["token"]
+        return token
 
 
 if __name__ == '__main__':
