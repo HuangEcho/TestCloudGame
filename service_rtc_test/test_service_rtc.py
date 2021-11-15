@@ -11,11 +11,6 @@ import allure
 from dependent.env_self import Env
 from dependent.requests_http import RequestHttp
 
-from service_rtc_test.script.route_avm_register import RouteAvmRegister
-from service_rtc_test.script.route_avm_heartbeat import RouteAvmHeartBeat
-from service_rtc_test.script.put_on_avm import PutOnAvm
-from service_rtc_test.script.avm_tag import AvmTag
-from service_rtc_test.script.release_node import ReleaseNode
 
 logger = logging.getLogger(__name__)
 # 增加一些ip地址
@@ -30,26 +25,7 @@ package_info = "channel_id=auto_test&package_name=com.cnvcs.junqi&version_code=1
 @allure.suite("service_rtc-接口测试")
 class TestServiceRTC(object):
 
-    # @pytest.fixture(scope="class")
-    # 更改环境后，不需要再设置这个脚本了
-    # def workspace(self):
-    #     logger.info("workspace ready")
-    #     # 注册avm
-    #     RouteAvmRegister().main()
-    #     # avm上报心跳
-    #     RouteAvmHeartBeat().main()
-    #     # 上架avm
-    #     PutOnAvm().main()
-    #     # 给avm打tag
-    #     AvmTag().main()
-    #     yield
-    #     # 释放节点
-    #     ReleaseNode().main()
-    #     logger.info("workspace clean")
-
-    # 如果不想跑workspace，可注释掉
     @pytest.fixture(scope="session")
-    # def driver(self, workspace):
     def driver(self):
         logger.info("test case setup")
         env = Env()
