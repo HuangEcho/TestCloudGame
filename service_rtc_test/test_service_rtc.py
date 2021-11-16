@@ -79,7 +79,7 @@ class TestServiceRTC(object):
     def test_session_create(self, driver):
         logger.info("test_session_create start")
         url = "http://{0}:{1}/session/create".format(driver["remote_ip"], driver["port"])
-        url = url + '?device_user={"auto_test11":"auto_test"}'
+        url = url + '?device_user={"auto_test2021":"auto_test"}'
         header = {"userid": "1", "appid": "auto_test", "x-forwarded-for": driver["x-forwarded-for"]}
         response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
