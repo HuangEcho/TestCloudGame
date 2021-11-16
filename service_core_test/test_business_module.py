@@ -613,6 +613,7 @@ class TestServiceRTC(object):
         assert "result" in check_response
         gid = check_response["result"]["gid"]
         # 删除一下添加的游戏
+        time.sleep(1)
         self.game_delete(driver, gid)
 
     def test_game_add_uid_is_zero(self, driver):
