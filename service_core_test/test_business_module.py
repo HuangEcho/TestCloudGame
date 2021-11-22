@@ -60,7 +60,7 @@ class TestServiceRTC(object):
             for gid in gids:
                 # gid还是tuple类型
                 self.game_delete(driver, int(gid[0]))
-                logger.debug("detele task, gid is {0}".format(gid))
+                logger.debug("delete task, gid is {0}".format(gid))
 
         return driver
 
@@ -369,7 +369,7 @@ class TestServiceRTC(object):
         assert response.status_code == 200
         check_response = json.loads(response.text)
         assert check_response["code"] == 1
-        assert "渠道不存在" in check_response["error"]
+        assert "渠道信息不存在" in check_response["error"]
 
         url = "{0}/gameManage/index/internal/channel/update".format(driver["test_domain"])
         headers = driver["headers"]
@@ -467,7 +467,7 @@ class TestServiceRTC(object):
         assert response.status_code == 200
         check_response = json.loads(response.text)
         assert check_response["code"] == 1
-        assert "渠道数据不存在" in check_response["error"]
+        assert "渠道信息不存在" in check_response["error"]
 
         url = "{0}/gameManage/index/internal/channel/detail".format(driver["test_domain"])
         headers = driver["headers"]
