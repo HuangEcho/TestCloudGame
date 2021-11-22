@@ -115,7 +115,7 @@ class TestServiceRTC(object):
                 "name": "test apk",
                 "desc": "test",
 
-                # 本地上传以及包名的数据
+                # upload_type: 1表示本地上传，2表示网络上传
                 "upload_type": 2,
                 "upload_url": apk_url,
                 "md5": apk_md5,
