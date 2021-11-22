@@ -205,7 +205,7 @@ class TestServiceRTC(object):
     #     assert response.status_code == 200
     #     check_response = json.loads(response.text)
     #     assert check_response["code"] == 1
-    #     assert "渠道不存在" in check_response["error"]
+    #     assert "渠道信息不存在" in check_response["error"]
 
     # # 目前没有校验
     # def test_channel_list_channel_id_is_zero(self, driver):
@@ -378,7 +378,7 @@ class TestServiceRTC(object):
         assert response.status_code == 200
         check_response = json.loads(response.text)
         assert check_response["code"] == 1
-        assert "渠道不存在" in check_response["error"]
+        assert "渠道信息不存在" in check_response["error"]
 
     def test_channel_update_cid_is_zero(self, driver):
         url = "{0}/gameManage/index/internal/channel/update".format(driver["test_domain"])
@@ -476,7 +476,7 @@ class TestServiceRTC(object):
         assert response.status_code == 200
         check_response = json.loads(response.text)
         assert check_response["code"] == 1
-        assert "渠道数据不存在" in check_response["error"]
+        assert "渠道信息不存在" in check_response["error"]
 
     # # 竟然允许cid不存在？返回了channel_id为1的数据
     # def test_channel_detail_lost_param(self, driver):
