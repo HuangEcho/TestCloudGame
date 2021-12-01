@@ -424,6 +424,21 @@ class TestServiceRTC(object):
         assert check_response["code"] == 1
         assert "params pool_level error" in check_response["message"]
 
+    # 设置pool_level超长数字
+    def test_connection_allocate_v2_pool_level_oversize(self, driver, session_teardown):
+        logger.info("test_connection_allocate_v2 start")
+        token = self.get_token(driver, "test_connection_allocate_v2")
+        # pool_level为str类型
+        url = "http://{0}:{1}/connection/allocate/v2?{2}&pool_level=10241024102410241024".format(
+            driver["remote_ip"], driver["port"], package_info)
+        header = {"Session-Token": token, "Peer-Id": driver["peer_id"],
+                  "x-forwarded-for": driver["x-forwarded-for"]}
+        response = RequestHttp().request_response(url=url, method="get", headers=header)
+        assert response.status_code == 200
+        check_response = json.loads(response.text)
+        assert check_response["code"] == 1
+        assert "params pool_level error" in check_response["message"]
+
     # method GET
     def test_keep_alive(self, driver, session_teardown):
         logger.info("test_keep_alive start")
