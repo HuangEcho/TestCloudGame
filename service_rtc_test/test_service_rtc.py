@@ -335,6 +335,95 @@ class TestServiceRTC(object):
         # assert check_response["code"] == 700
         # assert "session mismatch channelId, packageName" in check_response["message"]
 
+    # 定义的pool_level目前只有0,1,2 三种
+    # 对于已上线的游戏，可以返回节点
+    def test_connection_allocate_v2_pool_level_normal(self, driver, session_teardown):
+        logger.info("test_connection_allocate_v2 start")
+        driver["token"] = self.get_token(driver, "test_connection_allocate_v2")
+        # pool_level=0
+        url = "http://{0}:{1}/connection/allocate/v2?{2}&pool_level=0".format(
+            driver["remote_ip"], driver["port"], package_info)
+        header = {"Session-Token": driver["token"], "Peer-Id": driver["peer_id"],
+                  "x-forwarded-for": driver["x-forwarded-for"]}
+        response = RequestHttp().request_response(url=url, method="get", headers=header)
+        assert response.status_code == 200
+        check_response = json.loads(response.text)
+        assert check_response["code"] == 0
+        assert "params pool_level error" not in check_response["message"]
+
+    # pool_level=1， 设置只返回pool的节点；由于游戏没有池化，这里没有节点
+    # TODO: 后续考虑增加一个固定池化的节点，这里就可以验证会返回池化的点了。但是池化要占用一台设备
+    def test_connection_allocate_v2_pool_level_only_pool(self, driver, session_teardown):
+        logger.info("test_connection_allocate_v2 start")
+        driver["token"] = self.get_token(driver, "test_connection_allocate_v2")
+        # pool_level=1
+        url = "http://{0}:{1}/connection/allocate/v2?{2}&pool_level=1".format(
+            driver["remote_ip"], driver["port"], package_info)
+        header = {"Session-Token": driver["token"], "Peer-Id": driver["peer_id"],
+                  "x-forwarded-for": driver["x-forwarded-for"]}
+        response = RequestHttp().request_response(url=url, method="get", headers=header)
+        assert response.status_code == 200
+        check_response = json.loads(response.text)
+        # 保证不是报pool_level的错误
+        assert "params pool_level error" not in check_response["message"]
+
+    # pool_level=2， 排除池化节点，由于游戏没有池化，预期是返回节点信息，如果测试环境里节点都被占用了，就还是会返回错误
+    def test_connection_allocate_v2_pool_level_exclude_pool(self, driver, session_teardown):
+        logger.info("test_connection_allocate_v2 start")
+        driver["token"] = self.get_token(driver, "test_connection_allocate_v2")
+        # pool_level=2
+        url = "http://{0}:{1}/connection/allocate/v2?{2}&pool_level=2".format(
+            driver["remote_ip"], driver["port"], package_info)
+        header = {"Session-Token": driver["token"], "Peer-Id": driver["peer_id"],
+                  "x-forwarded-for": driver["x-forwarded-for"]}
+        response = RequestHttp().request_response(url=url, method="get", headers=header)
+        assert response.status_code == 200
+        check_response = json.loads(response.text)
+        assert check_response["code"] == 0
+        # 保证不是报pool_level的错误
+        assert "params pool_level error" not in check_response["message"]
+
+    # 设置pool_level超出定义，3和-1
+    def test_connection_allocate_v2_pool_level_beyond_defined(self, driver, session_teardown):
+        logger.info("test_connection_allocate_v2 start")
+        token = self.get_token(driver, "test_connection_allocate_v2")
+        # pool_level=3
+        url = "http://{0}:{1}/connection/allocate/v2?{2}&pool_level=3".format(
+            driver["remote_ip"], driver["port"], package_info)
+        header = {"Session-Token": token, "Peer-Id": driver["peer_id"],
+                  "x-forwarded-for": driver["x-forwarded-for"]}
+        response = RequestHttp().request_response(url=url, method="get", headers=header)
+        assert response.status_code == 200
+        check_response = json.loads(response.text)
+        assert check_response["code"] == 1
+        assert "params pool_level error" in check_response["message"]
+
+        # pool_level=-1
+        url = "http://{0}:{1}/connection/allocate/v2?{2}&pool_level=-1".format(
+            driver["remote_ip"], driver["port"], package_info)
+        header = {"Session-Token": token, "Peer-Id": driver["peer_id"],
+                  "x-forwarded-for": driver["x-forwarded-for"]}
+        response = RequestHttp().request_response(url=url, method="get", headers=header)
+        assert response.status_code == 200
+        check_response = json.loads(response.text)
+        assert check_response["code"] == 1
+        assert "params pool_level error" in check_response["message"]
+
+    # 设置pool_level为字符串
+    def test_connection_allocate_v2_pool_level_str(self, driver, session_teardown):
+        logger.info("test_connection_allocate_v2 start")
+        token = self.get_token(driver, "test_connection_allocate_v2")
+        # pool_level为str类型
+        url = "http://{0}:{1}/connection/allocate/v2?{2}&pool_level=test".format(
+            driver["remote_ip"], driver["port"], package_info)
+        header = {"Session-Token": token, "Peer-Id": driver["peer_id"],
+                  "x-forwarded-for": driver["x-forwarded-for"]}
+        response = RequestHttp().request_response(url=url, method="get", headers=header)
+        assert response.status_code == 200
+        check_response = json.loads(response.text)
+        assert check_response["code"] == 1
+        assert "params pool_level error" in check_response["message"]
+
     # method GET
     def test_keep_alive(self, driver, session_teardown):
         logger.info("test_keep_alive start")
