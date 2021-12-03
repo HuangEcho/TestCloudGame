@@ -193,7 +193,7 @@ class TestServiceRTC(object):
         response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
         check_response = json.loads(response.text)
-        assert check_response["code"] == 1
+        assert check_response["code"] > 0
         # 确认message里有错误信息。这种情况下，返回为 "params error"
         find_result = re.findall("params.*error", check_response["message"])
         assert len(find_result) > 0
@@ -209,7 +209,7 @@ class TestServiceRTC(object):
         response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
         check_response = json.loads(response.text)
-        assert check_response["code"] == 1
+        assert check_response["code"] > 0
         # 确认message里有错误信息。这种情况下，返回为 "params error"
         find_result = re.findall("params.*error", check_response["message"])
         assert len(find_result) > 0
@@ -225,7 +225,7 @@ class TestServiceRTC(object):
         response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
         check_response = json.loads(response.text)
-        assert check_response["code"] == 1
+        assert check_response["code"] > 0
         # 确认message里有错误信息。这种情况下，返回为 "params error"
         find_result = re.findall("params.*error", check_response["message"])
         assert len(find_result) > 0
@@ -241,7 +241,7 @@ class TestServiceRTC(object):
         response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
         check_response = json.loads(response.text)
-        assert check_response["code"] == 1
+        assert check_response["code"] > 0
         # 确认message里有错误信息。这种情况下，返回为 "params error"
         find_result = re.findall("params.*error", check_response["message"])
         assert len(find_result) > 0
@@ -286,7 +286,7 @@ class TestServiceRTC(object):
         response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
         check_response = json.loads(response.text)
-        assert check_response["code"] == 1
+        assert check_response["code"] > 0
         # 确认message里有错误信息。这种情况下，返回为 "params version_code error"
         find_result = re.findall("params.*error", check_response["message"])
         assert len(find_result) > 0
@@ -303,7 +303,7 @@ class TestServiceRTC(object):
         response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
         check_response = json.loads(response.text)
-        assert check_response["code"] == 1
+        assert check_response["code"] > 0
         # 确认message里有错误信息。这种情况下，返回为 "无相应的游戏数据"
         assert len(check_response["message"]) > 1
 
@@ -428,7 +428,7 @@ class TestServiceRTC(object):
     def test_connection_allocate_v2_pool_level_oversize(self, driver, session_teardown):
         logger.info("test_connection_allocate_v2 start")
         token = self.get_token(driver, "test_connection_allocate_v2")
-        # pool_level为str类型
+        # pool_level为超长数字
         url = "http://{0}:{1}/connection/allocate/v2?{2}&pool_level=10241024102410241024".format(
             driver["remote_ip"], driver["port"], package_info)
         header = {"Session-Token": token, "Peer-Id": driver["peer_id"],
