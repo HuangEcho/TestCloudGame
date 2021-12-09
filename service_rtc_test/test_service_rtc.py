@@ -151,14 +151,17 @@ class TestServiceRTC(object):
     def test_connection_allocate_v2(self, driver, session_teardown):
         # 使用已上线的一个游戏包信息
         logger.info("test_connection_allocate_v2 start")
-        driver["token"] = self.get_token(driver, "test_connection_allocate_v2")
+        token = self.get_token(driver, "test_connection_allocate_v2")
         url = "http://{0}:{1}/connection/allocate/v2?{2}".format(
             driver["remote_ip"], driver["port"], package_info)
-        header = {"Session-Token": driver["token"], "Peer-Id": driver["peer_id"],
+        header = {"Session-Token": token, "Peer-Id": driver["peer_id"],
                   "x-forwarded-for": driver["x-forwarded-for"]}
         response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
         check_response = json.loads(response.text)
+        # 已防万一，如果code为0，有返点，则需要close_session
+        if check_response["code"] == 0:
+            driver["token"] = token
         assert check_response["code"] == 0
         assert check_response["message"] == "ok"
         assert "agentIceServer" in check_response["data"] and "urls" in check_response["data"]["agentIceServer"]
@@ -168,7 +171,7 @@ class TestServiceRTC(object):
         # self.close_session(driver, token)
 
     # method GET
-    def test_connection_allocate_v2_token_invalid(self, driver):
+    def test_connection_allocate_v2_token_invalid(self, driver, session_teardown):
         logger.info("test_connection_allocate_v2_token_invalid start")
         disposable_token = "ad31c761727fbcd2643c73fd32235a6a60a780d43a94dd2e02998ab3a9bea41b"
         url = "http://{0}:{1}/connection/allocate/v2?{2}".format(
@@ -178,12 +181,15 @@ class TestServiceRTC(object):
         response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
         check_response = json.loads(response.text)
+        # 已防万一，如果code为0，有返点，则需要close_session
+        if check_response["code"] == 0:
+            driver["token"] = disposable_token
         assert check_response["code"] == 700
         # invalid session
         assert len(check_response["message"]) > 1
 
     # method GET
-    def test_connection_allocate_v2_without_channel(self, driver):
+    def test_connection_allocate_v2_without_channel(self, driver, session_teardown):
         logger.info("test_connection_allocate_v2_without_channel start")
         token = self.get_token(driver, "test_connection_allocate_v2_without_channel")
         url = "http://{0}:{1}/connection/allocate/v2?package_name=com.cnvcs.junqi&version_code=151".format(
@@ -193,13 +199,17 @@ class TestServiceRTC(object):
         response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
         check_response = json.loads(response.text)
+        # 已防万一，如果code为0，有返点，则需要close_session
+        if check_response["code"] == 0:
+            driver["token"] = token
+
         assert check_response["code"] > 0
         # 确认message里有错误信息。这种情况下，返回为 "params error"
         find_result = re.findall("params.*error", check_response["message"])
         assert len(find_result) > 0
 
     # method GET
-    def test_connection_allocate_v2_channel_is_null(self, driver):
+    def test_connection_allocate_v2_channel_is_null(self, driver, session_teardown):
         logger.info("test_connection_allocate_v2_channel_is_null start")
         token = self.get_token(driver, "test_connection_allocate_v2_channel_is_null")
         url = "http://{0}:{1}/connection/allocate/v2?channel_id=&package_name=com.cnvcs.junqi&version_code=151".format(
@@ -209,13 +219,17 @@ class TestServiceRTC(object):
         response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
         check_response = json.loads(response.text)
+        # 已防万一，如果code为0，有返点，则需要close_session
+        if check_response["code"] == 0:
+            driver["token"] = token
+
         assert check_response["code"] > 0
         # 确认message里有错误信息。这种情况下，返回为 "params error"
         find_result = re.findall("params.*error", check_response["message"])
         assert len(find_result) > 0
 
     # method GET
-    def test_connection_allocate_v2_without_package_name_is_null(self, driver):
+    def test_connection_allocate_v2_without_package_name_is_null(self, driver, session_teardown):
         logger.info("test_connection_allocate_v2_without_pacakage_name_is_null start")
         token = self.get_token(driver, "test_connection_allocate_v2_without_package_name_is_null")
         url = "http://{0}:{1}/connection/allocate/v2?channel_id=auto_test&package_name=&version_code=151".format(
@@ -225,13 +239,17 @@ class TestServiceRTC(object):
         response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
         check_response = json.loads(response.text)
+        # 已防万一，如果code为0，有返点，则需要close_session
+        if check_response["code"] == 0:
+            driver["token"] = token
+
         assert check_response["code"] > 0
         # 确认message里有错误信息。这种情况下，返回为 "params error"
         find_result = re.findall("params.*error", check_response["message"])
         assert len(find_result) > 0
 
     # method GET
-    def test_connection_allocate_v2_without_package_name(self, driver):
+    def test_connection_allocate_v2_without_package_name(self, driver, session_teardown):
         logger.info("test_connection_allocate_v2_without_pacakage_name start")
         token = self.get_token(driver, "test_connection_allocate_v2_without_package_name")
         url = "http://{0}:{1}/connection/allocate/v2?channel_id=auto_test&version_code=151".format(
@@ -241,6 +259,10 @@ class TestServiceRTC(object):
         response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
         check_response = json.loads(response.text)
+        # 已防万一，如果code为0，有返点，则需要close_session
+        if check_response["code"] == 0:
+            driver["token"] = token
+
         assert check_response["code"] > 0
         # 确认message里有错误信息。这种情况下，返回为 "params error"
         find_result = re.findall("params.*error", check_response["message"])
@@ -251,41 +273,52 @@ class TestServiceRTC(object):
     # 测试环境里com.cnvcs.junqi已上线，允许没有version_code
     def test_connection_allocate_v2_without_version_code(self, driver, session_teardown):
         logger.info("test_connection_allocate_v2_without_version_code start")
-        driver["token"] = self.get_token(driver, "test_connection_allocate_v2_without_version_code")
+        token = self.get_token(driver, "test_connection_allocate_v2_without_version_code")
         url = "http://{0}:{1}/connection/allocate/v2?channel_id=auto_test&package_name=com.cnvcs.junqi".format(
             driver["remote_ip"], driver["port"])
-        header = {"Session-Token": driver["token"], "Peer-Id": driver["peer_id"],
+        header = {"Session-Token": token, "Peer-Id": driver["peer_id"],
                   "x-forwarded-for": driver["x-forwarded-for"]}
         response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
         check_response = json.loads(response.text)
+        # 已防万一，如果code为0，有返点，则需要close_session
+        if check_response["code"] == 0:
+            driver["token"] = token
+
         assert check_response["code"] == 0
         # self.close_session(driver, token)
 
     # 结果同test_connection_allocate_v2_no_version_code
     def test_connection_allocate_v2_version_code_is_null(self, driver, session_teardown):
         logger.info("test_connection_allocate_v2_version_code_is_null start")
-        driver["token"] = self.get_token(driver, "test_connection_allocate_v2_version_code_is_null")
+        token = self.get_token(driver, "test_connection_allocate_v2_version_code_is_null")
         url = "http://{0}:{1}/connection/allocate/v2?channel_id=auto_test&package_name=com.cnvcs.junqi&version_code=".format(
             driver["remote_ip"], driver["port"])
-        header = {"Session-Token": driver["token"], "Peer-Id": driver["peer_id"],
+        header = {"Session-Token": token, "Peer-Id": driver["peer_id"],
                   "x-forwarded-for": driver["x-forwarded-for"]}
         response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
         check_response = json.loads(response.text)
+        # 已防万一，如果code为0，有返点，则需要close_session
+        if check_response["code"] == 0:
+            driver["token"] = token
+
         assert check_response["code"] == 0
         # self.close_session(driver, token)
 
     def test_connection_allocate_v2_version_code_not_int(self, driver, session_teardown):
         logger.info("test_connection_allocate_v2_version_code_not_int start")
-        driver["token"] = self.get_token(driver, "test_connection_allocate_v2_version_code_not_int")
+        token = self.get_token(driver, "test_connection_allocate_v2_version_code_not_int")
         url = "http://{0}:{1}/connection/allocate/v2?channel_id=auto_test&package_name=com.cnvcs.junqi&version_code=test".format(
             driver["remote_ip"], driver["port"])
-        header = {"Session-Token": driver["token"], "Peer-Id": driver["peer_id"],
+        header = {"Session-Token": token, "Peer-Id": driver["peer_id"],
                   "x-forwarded-for": driver["x-forwarded-for"]}
         response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
         check_response = json.loads(response.text)
+        # 已防万一，如果code为0，有返点，则需要close_session
+        if check_response["code"] == 0:
+            driver["token"] = token
         assert check_response["code"] > 0
         # 确认message里有错误信息。这种情况下，返回为 "params version_code error"
         find_result = re.findall("params.*error", check_response["message"])
@@ -295,42 +328,52 @@ class TestServiceRTC(object):
     # 这里是否要先判断channel_id是否存在？
     def test_connection_allocate_v2_param_wrong(self, driver, session_teardown):
         logger.info("test_connection_allocate_v2_param_wrong start")
-        driver["token"] = self.get_token(driver, "test_connection_allocate_v2_param_wrong")
+        token = self.get_token(driver, "test_connection_allocate_v2_param_wrong")
         url = "http://{0}:{1}/connection/allocate/v2?channel_id=wrong&package_name=com.cnvcs.junqi&version_code=151".format(
             driver["remote_ip"], driver["port"])
-        header = {"Session-Token": driver["token"], "Peer-Id": driver["peer_id"],
+        header = {"Session-Token": token, "Peer-Id": driver["peer_id"],
                   "x-forwarded-for": driver["x-forwarded-for"]}
         response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
         check_response = json.loads(response.text)
+        # 已防万一，如果code为0，有返点，则需要close_session
+        if check_response["code"] == 0:
+            driver["token"] = token
         assert check_response["code"] > 0
         # 确认message里有错误信息。这种情况下，返回为 "无相应的游戏数据"
         assert len(check_response["message"]) > 1
 
     def test_connection_allocate_v2_mismatch_channel_id(self, driver, session_teardown):
         logger.info("test_connection_allocate_v2_mismatch_channel_id start")
-        driver["token"] = self.get_token(driver, "test_connection_allocate_v2_mismatch_channel_id")
+        token = self.get_token(driver, "test_connection_allocate_v2_mismatch_channel_id")
         url = "http://{0}:{1}/connection/allocate/v2?channel_id=mismatch&package_name=com.cnvcs.junqi&version_code=151".format(
             driver["remote_ip"], driver["port"])
-        header = {"Session-Token": driver["token"], "Peer-Id": driver["peer_id"],
+        header = {"Session-Token": token, "Peer-Id": driver["peer_id"],
                   "x-forwarded-for": driver["x-forwarded-for"]}
         response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
         check_response = json.loads(response.text)
+        # 已防万一，如果code为0，有返点，则需要close_session
+        if check_response["code"] == 0:
+            driver["token"] = token
         assert check_response["code"] != 0
         # assert check_response["code"] == 700
         # assert "session mismatch channelId, packageName" in check_response["message"]
 
     def test_connection_allocate_v2_mismatch_package_name(self, driver, session_teardown):
         logger.info("test_connection_allocate_v2_mismatch_package_name start")
-        driver["token"] = self.get_token(driver, "test_connection_allocate_v2_mismatch_package_name")
+        token = self.get_token(driver, "test_connection_allocate_v2_mismatch_package_name")
         url = "http://{0}:{1}/connection/allocate/v2?channel_id=auto_test&package_name=mismatch&version_code=151".format(
             driver["remote_ip"], driver["port"])
-        header = {"Session-Token": driver["token"], "Peer-Id": driver["peer_id"],
+        header = {"Session-Token": token, "Peer-Id": driver["peer_id"],
                   "x-forwarded-for": driver["x-forwarded-for"]}
         response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
         check_response = json.loads(response.text)
+        # 已防万一，如果code为0，有返点，则需要close_session
+        if check_response["code"] == 0:
+            driver["token"] = token
+
         assert check_response["code"] != 0
         # assert check_response["code"] == 700
         # assert "session mismatch channelId, packageName" in check_response["message"]
@@ -339,15 +382,18 @@ class TestServiceRTC(object):
     # 对于已上线的游戏，可以返回节点
     def test_connection_allocate_v2_pool_level_normal(self, driver, session_teardown):
         logger.info("test_connection_allocate_v2 start")
-        driver["token"] = self.get_token(driver, "test_connection_allocate_v2")
+        token = self.get_token(driver, "test_connection_allocate_v2")
         # pool_level=0
         url = "http://{0}:{1}/connection/allocate/v2?{2}&pool_level=0".format(
             driver["remote_ip"], driver["port"], package_info)
-        header = {"Session-Token": driver["token"], "Peer-Id": driver["peer_id"],
+        header = {"Session-Token": token, "Peer-Id": driver["peer_id"],
                   "x-forwarded-for": driver["x-forwarded-for"]}
         response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
         check_response = json.loads(response.text)
+        # 已防万一，如果code为0，有返点，则需要close_session
+        if check_response["code"] == 0:
+            driver["token"] = token
         assert check_response["code"] == 0
         assert "params pool_level error" not in check_response["message"]
 
@@ -355,30 +401,38 @@ class TestServiceRTC(object):
     # TODO: 后续考虑增加一个固定池化的节点，这里就可以验证会返回池化的点了。但是池化要占用一台设备
     def test_connection_allocate_v2_pool_level_only_pool(self, driver, session_teardown):
         logger.info("test_connection_allocate_v2 start")
-        driver["token"] = self.get_token(driver, "test_connection_allocate_v2")
+        token = self.get_token(driver, "test_connection_allocate_v2")
         # pool_level=1
         url = "http://{0}:{1}/connection/allocate/v2?{2}&pool_level=1".format(
             driver["remote_ip"], driver["port"], package_info)
-        header = {"Session-Token": driver["token"], "Peer-Id": driver["peer_id"],
+        header = {"Session-Token": token, "Peer-Id": driver["peer_id"],
                   "x-forwarded-for": driver["x-forwarded-for"]}
         response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
         check_response = json.loads(response.text)
+        # 已防万一，如果code为0，有返点，则需要close_session
+        if check_response["code"] == 0:
+            driver["token"] = token
+
+        assert check_response["code"] > 0
         # 保证不是报pool_level的错误
         assert "params pool_level error" not in check_response["message"]
 
     # pool_level=2， 排除池化节点，由于游戏没有池化，预期是返回节点信息，如果测试环境里节点都被占用了，就还是会返回错误
     def test_connection_allocate_v2_pool_level_exclude_pool(self, driver, session_teardown):
         logger.info("test_connection_allocate_v2 start")
-        driver["token"] = self.get_token(driver, "test_connection_allocate_v2")
+        token = self.get_token(driver, "test_connection_allocate_v2")
         # pool_level=2
         url = "http://{0}:{1}/connection/allocate/v2?{2}&pool_level=2".format(
             driver["remote_ip"], driver["port"], package_info)
-        header = {"Session-Token": driver["token"], "Peer-Id": driver["peer_id"],
+        header = {"Session-Token": token, "Peer-Id": driver["peer_id"],
                   "x-forwarded-for": driver["x-forwarded-for"]}
         response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
         check_response = json.loads(response.text)
+        # 已防万一，如果code为0，有返点，则需要close_session
+        if check_response["code"] == 0:
+            driver["token"] = token
         assert check_response["code"] == 0
         # 保证不是报pool_level的错误
         assert "params pool_level error" not in check_response["message"]
@@ -395,6 +449,10 @@ class TestServiceRTC(object):
         response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
         check_response = json.loads(response.text)
+        # 已防万一，如果code为0，有返点，则需要close_session
+        if check_response["code"] == 0:
+            driver["token"] = token
+
         assert check_response["code"] == 1
         assert "params pool_level error" in check_response["message"]
 
@@ -421,6 +479,10 @@ class TestServiceRTC(object):
         response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
         check_response = json.loads(response.text)
+        # 已防万一，如果code为0，有返点，则需要close_session
+        if check_response["code"] == 0:
+            driver["token"] = token
+
         assert check_response["code"] == 1
         assert "params pool_level error" in check_response["message"]
 
@@ -436,6 +498,9 @@ class TestServiceRTC(object):
         response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
         check_response = json.loads(response.text)
+        # 已防万一，如果code为0，有返点，则需要close_session
+        if check_response["code"] == 0:
+            driver["token"] = token
         assert check_response["code"] == 1
         assert "params pool_level error" in check_response["message"]
 
@@ -443,11 +508,14 @@ class TestServiceRTC(object):
     def test_keep_alive(self, driver, session_teardown):
         logger.info("test_keep_alive start")
         # 绑定实例
-        driver["token"] = self.get_token(driver, "test_keep_alive")
-        self.connection_allocate_v2(driver, driver["token"])
+        token = self.get_token(driver, "test_keep_alive")
+        allocate_response = self.connection_allocate_v2(driver, token)
+        # 已防万一，如果code为0，有返点，则需要close_session
+        if json.loads(allocate_response.text)["code"] == 0:
+            driver["token"] = token
 
         url = "http://{0}:{1}/session/keepalive".format(driver["remote_ip"], driver["port"])
-        header = {"Session-Token": driver["token"], "x-forwarded-for": driver["x-forwarded-for"]}
+        header = {"Session-Token": token, "x-forwarded-for": driver["x-forwarded-for"]}
         response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
         check_response = json.loads(response.text)
@@ -455,7 +523,7 @@ class TestServiceRTC(object):
         # self.close_session(driver, token)
 
     # 没有绑定实例化，直接请求keep_alive
-    def test_keep_alive_without_connection(self, driver):
+    def test_keep_alive_without_connection(self, driver, session_teardown):
         logger.info("test_keep_alive_without_connection start")
         # 只获取了token，没有去实例化
         token = self.get_token(driver, "test_keep_alive_without_connection")
@@ -464,6 +532,10 @@ class TestServiceRTC(object):
         response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
         check_response = json.loads(response.text)
+        # 已防万一，如果code为0，有返点，则需要close_session
+        if check_response["code"] == 0:
+            driver["token"] = token
+
         assert check_response["code"] == 700
         # # 报错 "get session token error"
         # assert len(check_response["message"]) > 1
@@ -499,11 +571,14 @@ class TestServiceRTC(object):
     def test_session_close(self, driver, session_teardown):
         logger.info("test_session_close start")
         # 绑定实例
-        driver["token"] = self.get_token(driver, "test_session_close")
-        self.connection_allocate_v2(driver, driver["token"])
+        token = self.get_token(driver, "test_session_close")
+        allocate_response = self.connection_allocate_v2(driver, token)
+        # 已防万一，如果code为0，有返点，则需要close_session
+        if json.loads(allocate_response.text)["code"] == 0:
+            driver["token"] = token
 
         url = "http://{0}:{1}/session/close".format(driver["remote_ip"], driver["port"])
-        header = {"Session-Token": driver["token"], "x-forwarded-for": driver["x-forwarded-for"]}
+        header = {"Session-Token": token, "x-forwarded-for": driver["x-forwarded-for"]}
         response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
         check_response = json.loads(response.text)
@@ -513,8 +588,11 @@ class TestServiceRTC(object):
     def test_session_close_without_token(self, driver, session_teardown):
         logger.info("test_session_close_without_token start")
         # 绑定实例
-        driver["token"] = self.get_token(driver, "test_session_close_without_token")
-        self.connection_allocate_v2(driver, driver["token"])
+        token = self.get_token(driver, "test_session_close_without_token")
+        allocate_response = self.connection_allocate_v2(driver, token)
+        # 已防万一，如果code为0，有返点，则需要close_session
+        if json.loads(allocate_response.text)["code"] == 0:
+            driver["token"] = token
 
         url = "http://{0}:{1}/session/close".format(driver["remote_ip"], driver["port"])
         header = {"x-forwarded-for": driver["x-forwarded-for"]}
@@ -541,11 +619,14 @@ class TestServiceRTC(object):
     def test_admin_connection_get(self, driver, session_teardown):
         logger.info("test_admin_connection_get start")
         # 绑定实例
-        driver["token"] = self.get_token(driver, "test_admin_connection_get")
-        self.connection_allocate_v2(driver, driver["token"])
+        token = self.get_token(driver, "test_admin_connection_get")
+        allocate_response = self.connection_allocate_v2(driver, token)
+        # 已防万一，如果code为0，有返点，则需要close_session
+        if json.loads(allocate_response.text)["code"] == 0:
+            driver["token"] = token
 
         url = "http://{0}:{1}/admin/connection/get?sessionToken={2}".format(driver["remote_ip"], driver["port"],
-                                                                            driver["token"])
+                                                                            token)
         header = {"x-forwarded-for": driver["x-forwarded-for"]}
         response = RequestHttp().request_response(url=url, method="get", headers=header)
         assert response.status_code == 200
@@ -569,8 +650,11 @@ class TestServiceRTC(object):
     def test_admin_connection_get_param_without_token(self, driver, session_teardown):
         logger.info("test_admin_connection_get_param_without_token start")
         # 绑定实例
-        driver["token"] = self.get_token(driver, "test_admin_connection_get_param_without_token")
-        self.connection_allocate_v2(driver, driver["token"])
+        token = self.get_token(driver, "test_admin_connection_get_param_without_token")
+        allocate_response = self.connection_allocate_v2(driver, token)
+        # 已防万一，如果code为0，有返点，则需要close_session
+        if json.loads(allocate_response.text)["code"] == 0:
+            driver["token"] = token
 
         url = "http://{0}:{1}/admin/connection/get".format(driver["remote_ip"], driver["port"])
         header = {"x-forwarded-for": driver["x-forwarded-for"]}
@@ -598,13 +682,17 @@ class TestServiceRTC(object):
     def test_admin_agent_msg_closed(self, driver, session_teardown):
         logger.info("test_admin_agent_msg_closed start")
         # 绑定实例
-        driver["token"] = self.get_token(driver, "test_admin_agent_msg_closed")
-        self.connection_allocate_v2(driver, driver["token"])
-        node_id = json.loads(self.connection_get(driver, driver["token"]).text)["data"]["connection"]["nodeId"]
+        token = self.get_token(driver, "test_admin_agent_msg_closed")
+        allocate_response = self.connection_allocate_v2(driver, token)
+        # 已防万一，如果code为0，有返点，则需要close_session
+        if json.loads(allocate_response.text)["code"] == 0:
+            driver["token"] = token
+
+        node_id = json.loads(self.connection_get(driver, token).text)["data"]["connection"]["nodeId"]
         url = "http://{0}:{1}/admin/agent/msg".format(driver["remote_ip"], driver["port"])
         header = {"x-forwarded-for": driver["x-forwarded-for"]}
         data = {"node_id": node_id,
-                "data": {"type": "closed", "session_id": driver["token"], "reason": "timeout", "code": 2101, "initiator": 0}}
+                "data": {"type": "closed", "session_id": token, "reason": "timeout", "code": 2101, "initiator": 0}}
         response = RequestHttp().request_response(url=url, method="post", headers=header, data=data)
         assert response.status_code == 200
         check_response = json.loads(response.text)
@@ -654,7 +742,7 @@ class TestServiceRTC(object):
         header = {"Session-Token": token, "x-forwarded-for": driver["x-forwarded-for"]}
         requests.get(url, headers=header)
         # close session后等待几秒
-        time.sleep(3)
+        time.sleep(7)
 
 
 if __name__ == '__main__':
