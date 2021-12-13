@@ -33,7 +33,7 @@ pytest.main(["-s", "test_service_rtc.py"])
 ```
 - 或者直接在命令行中执行,-s需要写具体的地址，如 service_core_test/test_resource_manage.py
 ```bash
-pytest -s service_core_test/test_resource_manage.py --alluredir=service_core_test/temp
+pytest -s service_core_test/test_business_module.py --alluredir=service_core_test/report
 ```
 - 如果配置了pytest.ini文件，则可以把pytest的参数写在addopts中，命令行中只输入pytest即可
 ```bash
@@ -46,7 +46,7 @@ allure generate ./temp -o ./report --clean
 ```
 - 建议还是每个service下放一个temp，把pytest的运行结果放在里面，这样运行allure的时候，只会有当前的项目的结果。不然会把所有的结果都展示出来
 ```bash
-allure generate service_core_test/temp -o ./report --clean
+allure generate service_core_test/report -o ./report --clean
 ```
 ## 关于log
 - 每次生成后都会覆盖

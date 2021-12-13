@@ -129,6 +129,7 @@ class TestServiceCore(object):
                 "max_concurrent": 0,
                 "instance_type": 0,
                 "quality": "720p",
+                "start_options": "720p",
             }
         }
         return data
@@ -158,6 +159,7 @@ class TestServiceCore(object):
                 "max_concurrent": 0,
                 "instance_type": 0,
                 "quality": "720p",
+                "start_options": "720p",
             }
         }
         return data
@@ -827,16 +829,16 @@ class TestServiceCore(object):
     #     assert check_response["code"] == 1
     #     assert "参数错误" in check_response["error"]
 
-    def test_game_add_quality_is_null(self, driver):
-        add_url = "{0}/gameManage/index/internal/game/add".format(driver["test_domain"])
-        headers = driver["headers"]
-        data = copy.deepcopy(self.url_data(driver))
-        data["params"]["quality"] = ""
-        response = RequestHttp().request_response(method="post", url=add_url, data=data, headers=headers)
-        assert response.status_code == 200
-        check_response = json.loads(response.text)
-        assert check_response["code"] == 1
-        assert "请选择播流画质" in check_response["error"]
+    # def test_game_add_quality_is_null(self, driver):
+    #     add_url = "{0}/gameManage/index/internal/game/add".format(driver["test_domain"])
+    #     headers = driver["headers"]
+    #     data = copy.deepcopy(self.url_data(driver))
+    #     data["params"]["quality"] = ""
+    #     response = RequestHttp().request_response(method="post", url=add_url, data=data, headers=headers)
+    #     assert response.status_code == 200
+    #     check_response = json.loads(response.text)
+    #     assert check_response["code"] == 1
+    #     assert "请选择播流画质" in check_response["error"]
 
     def test_game_add_upload_type_local_params_is_null(self, driver, upload_apk):
         add_url = "{0}/gameManage/index/internal/game/add".format(driver["test_domain"])
@@ -1007,16 +1009,27 @@ class TestServiceCore(object):
         # assert check_response["code"] == 1
         # # assert "system error" in check_response["error"]
 
-        # lost quality
+        # # lost quality, 参数已废弃
+        # data_lost_params = copy.deepcopy(data)
+        # data_lost_params["params"].pop("quality")
+        # response = RequestHttp().request_response(method="post", url=add_url, data=data_lost_params,
+        #                                           headers=headers)
+        # assert response.status_code == 200
+        # check_response = json.loads(response.text)
+        # logger.debug("response error is {0}".format(check_response["error"]))
+        # assert check_response["code"] == 1
+        # assert "请选择播流画质" in check_response["error"]
+
+        # lost start_options
         data_lost_params = copy.deepcopy(data)
-        data_lost_params["params"].pop("quality")
+        data_lost_params["params"].pop("start_options")
         response = RequestHttp().request_response(method="post", url=add_url, data=data_lost_params,
                                                   headers=headers)
         assert response.status_code == 200
         check_response = json.loads(response.text)
         logger.debug("response error is {0}".format(check_response["error"]))
         assert check_response["code"] == 1
-        assert "请选择播流画质" in check_response["error"]
+        assert "请输入游戏画质配置参数" in check_response["error"]
 
     def test_game_add_upload_type_local_lost_param(self, driver, upload_apk):
         # 本地添加, 先上传apk
