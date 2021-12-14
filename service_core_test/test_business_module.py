@@ -35,9 +35,10 @@ class TestServiceCore(object):
         env = Env()
         env.get_env_info()
         environment = env.env["service_core"]
+        server_url = "{0}:{1}".format(environment["server_ip"], environment["server_port"])
         
         # 设置默认的id值
-        driver = {"customer_id": 1, "chan_id": "autotest", "channel_id": 6, "test_domain": environment["domain"]}
+        driver = {"customer_id": 1, "chan_id": "autotest", "channel_id": 6, "test_domain": environment["domain"], "server_url": server_url}
 
         url = "{0}/login".format(driver["test_domain"])
         response = requests.get(url)
@@ -129,7 +130,7 @@ class TestServiceCore(object):
                 "max_concurrent": 0,
                 "instance_type": 0,
                 "quality": "720p",
-                "start_options": "720p",
+                "start_options": '[{"definition":480,"max_frame_rate":30,"max_bitrate_kbps":1000,"checked":0},{"definition":720,"max_frame_rate":30,"max_bitrate_kbps":3000,"checked":1},{"definition":1080,"max_frame_rate":60,"max_bitrate_kbps":6000,"checked":0}]',
             }
         }
         return data
@@ -159,7 +160,7 @@ class TestServiceCore(object):
                 "max_concurrent": 0,
                 "instance_type": 0,
                 "quality": "720p",
-                "start_options": "720p",
+                "start_options": '[{"definition":480,"max_frame_rate":30,"max_bitrate_kbps":1000,"checked":0},{"definition":720,"max_frame_rate":30,"max_bitrate_kbps":3000,"checked":1},{"definition":1080,"max_frame_rate":60,"max_bitrate_kbps":6000,"checked":0}]',
             }
         }
         return data
@@ -1102,6 +1103,46 @@ class TestServiceCore(object):
         check_response = json.loads(response.text)
         assert check_response["code"] == 1
         assert "请输入上传游戏包md5值" in check_response["error"]
+
+    def test_game_detail(self, driver):
+        # auto_test下军旗 com.cnvcs.junqi 这个游戏
+        test_gid = 20
+        detail_url = "http://{0}/internal/game/detail?gid={1}".format(driver["server_url"], test_gid)
+        response = RequestHttp().request_response(method="get", url=detail_url)
+        assert response.status_code == 200
+        check_response = json.loads(response.text)
+        assert check_response["code"] == 0
+        assert "data" in check_response
+        assert check_response["data"]["gid"] == 20
+        assert check_response["data"]["package_name"] == "com.cnvcs.junqi"
+        assert "start_options" in check_response["data"]
+
+    def test_online_pack_info(self, driver):
+        # auto_test下军旗 com.cnvcs.junqi 这个游戏
+        test_params = "channel_id=auto_test&package_name=com.cnvcs.junqi&uid=1"
+        detail_url = "http://{0}/internal/sdk/online_pack_info?{1}".format(driver["server_url"], test_params)
+        response = RequestHttp().request_response(method="get", url=detail_url)
+        assert response.status_code == 200
+        check_response = json.loads(response.text)
+        assert check_response["code"] == 0
+        assert "data" in check_response
+        assert check_response["data"]["uid"] == 1
+        assert check_response["data"]["package_name"] == "com.cnvcs.junqi"
+        assert "start_option" in check_response["data"]
+
+    def test__pack_info(self, driver):
+        # auto_test下军旗 com.cnvcs.junqi 这个游戏
+        test_params = "channel_id=auto_test&package_name=com.cnvcs.junqi&uid=1&version_code=151"
+        detail_url = "http://{0}/internal/sdk/pack_info?{1}".format(driver["server_url"], test_params)
+        response = RequestHttp().request_response(method="get", url=detail_url)
+        assert response.status_code == 200
+        check_response = json.loads(response.text)
+        assert check_response["code"] == 0
+        assert "data" in check_response
+        assert check_response["data"]["uid"] == 1
+        assert check_response["data"]["package_name"] == "com.cnvcs.junqi"
+        assert check_response["data"]["version_code"] == 151
+        assert "start_option" in check_response["data"]
 
 
 if __name__ == '__main__':
