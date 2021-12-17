@@ -1117,6 +1117,25 @@ class TestServiceCore(object):
         assert check_response["data"]["package_name"] == "com.cnvcs.junqi"
         assert "start_options" in check_response["data"]
 
+    def test_game_detail_without_param(self, driver):
+        # lost gid
+        detail_url = "http://{0}/internal/game/detail".format(driver["server_url"])
+        response = RequestHttp().request_response(method="get", url=detail_url)
+        assert response.status_code == 200
+        check_response = json.loads(response.text)
+        assert check_response["code"] == 1
+        assert "参数错误" in check_response["message"]
+
+    # 请求不存在的gid
+    def test_game_detail_gid_is_wrong(self, driver):
+        wrong_gid = -1
+        detail_url = "http://{0}/internal/game/detail?gid={1}".format(driver["server_url"], wrong_gid)
+        response = RequestHttp().request_response(method="get", url=detail_url)
+        assert response.status_code == 200
+        check_response = json.loads(response.text)
+        assert check_response["code"] == 1
+        assert "游戏不存在" in check_response["message"]
+
     def test_online_pack_info(self, driver):
         # auto_test下军旗 com.cnvcs.junqi 这个游戏
         test_params = "channel_id=auto_test&package_name=com.cnvcs.junqi&uid=1"
@@ -1128,9 +1147,68 @@ class TestServiceCore(object):
         assert "data" in check_response
         assert check_response["data"]["uid"] == 1
         assert check_response["data"]["package_name"] == "com.cnvcs.junqi"
-        assert "start_option" in check_response["data"]
+        assert "start_options" in check_response["data"]
 
-    def test__pack_info(self, driver):
+    def test_online_pack_info_without_param(self, driver):
+        # auto_test下军旗 com.cnvcs.junqi 这个游戏
+        # test_params = "channel_id=auto_test&package_name=com.cnvcs.junqi&uid=1"
+
+        # lost channel_id
+        test_params = "package_name=com.cnvcs.junqi&uid=1"
+        detail_url = "http://{0}/internal/sdk/online_pack_info?{1}".format(driver["server_url"], test_params)
+        response = RequestHttp().request_response(method="get", url=detail_url)
+        assert response.status_code == 200
+        check_response = json.loads(response.text)
+        assert check_response["code"] == 1
+        assert "参数错误" in check_response["message"]
+
+        # lost package_name
+        test_params = "channel_id=auto_test&uid=1"
+        detail_url = "http://{0}/internal/sdk/online_pack_info?{1}".format(driver["server_url"], test_params)
+        response = RequestHttp().request_response(method="get", url=detail_url)
+        assert response.status_code == 200
+        check_response = json.loads(response.text)
+        assert check_response["code"] == 1
+        assert "参数错误" in check_response["message"]
+
+        # lost uid
+        test_params = "channel_id=auto_test&package_name=com.cnvcs.junqi"
+        detail_url = "http://{0}/internal/sdk/online_pack_info?{1}".format(driver["server_url"], test_params)
+        response = RequestHttp().request_response(method="get", url=detail_url)
+        assert response.status_code == 200
+        check_response = json.loads(response.text)
+        assert check_response["code"] == 1
+        assert "参数错误" in check_response["message"]
+
+    def test_online_pack_info_not_exist(self, driver):
+        # not exist channel_id
+        test_params = "channel_id=not_exist_channel&package_name=com.cnvcs.junqi&uid=1"
+        detail_url = "http://{0}/internal/sdk/online_pack_info?{1}".format(driver["server_url"], test_params)
+        response = RequestHttp().request_response(method="get", url=detail_url)
+        assert response.status_code == 200
+        check_response = json.loads(response.text)
+        assert check_response["code"] == 1
+        assert "游戏不存在" in check_response["message"]
+
+        # not exist package_name
+        test_params = "channel_id=auto_test&package_name=com.not.exist.package.name&uid=1"
+        detail_url = "http://{0}/internal/sdk/online_pack_info?{1}".format(driver["server_url"], test_params)
+        response = RequestHttp().request_response(method="get", url=detail_url)
+        assert response.status_code == 200
+        check_response = json.loads(response.text)
+        assert check_response["code"] == 1
+        assert "游戏不存在" in check_response["message"]
+
+        # not exist uid
+        test_params = "channel_id=auto_test&package_name=com.not.exist.package.name&uid=-11"
+        detail_url = "http://{0}/internal/sdk/online_pack_info?{1}".format(driver["server_url"], test_params)
+        response = RequestHttp().request_response(method="get", url=detail_url)
+        assert response.status_code == 200
+        check_response = json.loads(response.text)
+        assert check_response["code"] == 1
+        assert "游戏不存在" in check_response["message"]
+
+    def test_pack_info(self, driver):
         # auto_test下军旗 com.cnvcs.junqi 这个游戏
         test_params = "channel_id=auto_test&package_name=com.cnvcs.junqi&uid=1&version_code=151"
         detail_url = "http://{0}/internal/sdk/pack_info?{1}".format(driver["server_url"], test_params)
@@ -1142,7 +1220,85 @@ class TestServiceCore(object):
         assert check_response["data"]["uid"] == 1
         assert check_response["data"]["package_name"] == "com.cnvcs.junqi"
         assert check_response["data"]["version_code"] == 151
-        assert "start_option" in check_response["data"]
+        assert "start_options" in check_response["data"]
+
+    def test_pack_info_without_param(self, driver):
+        # auto_test下军旗 com.cnvcs.junqi 这个游戏
+        # test_params = "channel_id=auto_test&package_name=com.cnvcs.junqi&uid=1&version_code=151"
+        # appid暂时不确定用处，没有这个不影响接口返回
+
+        # lost channel_id
+        test_params = "package_name=com.cnvcs.junqi&uid=1&version_code=151"
+        detail_url = "http://{0}/internal/sdk/pack_info?{1}".format(driver["server_url"], test_params)
+        response = RequestHttp().request_response(method="get", url=detail_url)
+        assert response.status_code == 200
+        check_response = json.loads(response.text)
+        assert check_response["code"] == 1
+        assert "参数错误" in check_response["message"]
+
+        # lost package_name
+        test_params = "channel_id=auto_test&uid=1&version_code=151"
+        detail_url = "http://{0}/internal/sdk/pack_info?{1}".format(driver["server_url"], test_params)
+        response = RequestHttp().request_response(method="get", url=detail_url)
+        assert response.status_code == 200
+        check_response = json.loads(response.text)
+        assert check_response["code"] == 1
+        assert "参数错误" in check_response["message"]
+
+        # lost uid
+        test_params = "channel_id=auto_test&package_name=com.cnvcs.junqi&version_code=151"
+        detail_url = "http://{0}/internal/sdk/pack_info?{1}".format(driver["server_url"], test_params)
+        response = RequestHttp().request_response(method="get", url=detail_url)
+        assert response.status_code == 200
+        check_response = json.loads(response.text)
+        assert check_response["code"] == 1
+        assert "参数错误" in check_response["message"]
+
+        # lost version_code
+        test_params = "channel_id=auto_test&package_name=com.cnvcs.junqi&uid=1"
+        detail_url = "http://{0}/internal/sdk/pack_info?{1}".format(driver["server_url"], test_params)
+        response = RequestHttp().request_response(method="get", url=detail_url)
+        assert response.status_code == 200
+        check_response = json.loads(response.text)
+        assert check_response["code"] == 1
+        assert "参数错误" in check_response["message"]
+
+    def test_pack_info_not_exist(self, driver):
+        # not exist channel_id
+        test_params = "channel_id=not_exist_channel&package_name=com.cnvcs.junqi&uid=1&version_code=151"
+        detail_url = "http://{0}/internal/sdk/pack_info?{1}".format(driver["server_url"], test_params)
+        response = RequestHttp().request_response(method="get", url=detail_url)
+        assert response.status_code == 200
+        check_response = json.loads(response.text)
+        assert check_response["code"] == 1
+        assert "游戏不存在" in check_response["message"]
+
+        # not exist package_name
+        test_params = "channel_id=auto_test&package_name=com.not.exist.package.name&uid=1&version_code=151"
+        detail_url = "http://{0}/internal/sdk/pack_info?{1}".format(driver["server_url"], test_params)
+        response = RequestHttp().request_response(method="get", url=detail_url)
+        assert response.status_code == 200
+        check_response = json.loads(response.text)
+        assert check_response["code"] == 1
+        assert "游戏不存在" in check_response["message"]
+
+        # not exist uid
+        test_params = "channel_id=auto_test&package_name=com.not.exist.package.name&uid=-1&version_code=151"
+        detail_url = "http://{0}/internal/sdk/pack_info?{1}".format(driver["server_url"], test_params)
+        response = RequestHttp().request_response(method="get", url=detail_url)
+        assert response.status_code == 200
+        check_response = json.loads(response.text)
+        assert check_response["code"] == 1
+        assert "游戏不存在" in check_response["message"]
+
+        # not exist version_code
+        test_params = "channel_id=auto_test&package_name=com.not.exist.package.name&uid=-1&version_code=-1"
+        detail_url = "http://{0}/internal/sdk/pack_info?{1}".format(driver["server_url"], test_params)
+        response = RequestHttp().request_response(method="get", url=detail_url)
+        assert response.status_code == 200
+        check_response = json.loads(response.text)
+        assert check_response["code"] == 1
+        assert "游戏不存在" in check_response["message"]
 
 
 if __name__ == '__main__':
